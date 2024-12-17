@@ -1,0 +1,73 @@
+﻿@page "/feedingrecords"
+@using BabyData.Components.Account
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using BabyData.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager Navigation
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+
+<PageTitle>Feeding Records</PageTitle>
+
+<h1>Feeding Records</h1>
+
+<p>
+    <a href="feedingrecords/create">Create New</a>
+</p>
+
+@if (FeedingRecords == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <QuickGrid Class="table" Items="FeedingRecords" Pagination="paginationState">
+        <PropertyColumn Property="feedingrecord => feedingrecord.StartTime" />
+        <PropertyColumn Property="feedingrecord => feedingrecord.EndTime" />
+        <PropertyColumn Property="feedingrecord => feedingrecord.Date" Sortable="true" />
+        <PropertyColumn Property="feedingrecord => feedingrecord.FeedingType" />
+        <PropertyColumn Property="feedingrecord => feedingrecord.Notes" />
+
+        <TemplateColumn Context="feedingrecord">
+            <a href="@($"feedingrecords/edit?id={feedingrecord.Id}")">Edit</a> |
+            <a href="@($"feedingrecords/details?id={feedingrecord.Id}")">Details</a> |
+            <a href="@($"feedingrecords/delete?id={feedingrecord.Id}")">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
+
+    <Paginator State="paginationState" />
+
+
+}
+
+@code {
+    private ApplicationDbContext context = default!;
+    private IQueryable<FeedingRecord>? FeedingRecords;
+
+    PaginationState paginationState = new() { ItemsPerPage = 10 };
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; } = default!;
+
+    async Task<string> getUserName()
+    {
+        return (await authenticationStateTask)?.User?.Identity?.Name ?? string.Empty;
+    }
+    async Task<string> getUserId()
+    {
+        var user = (await authenticationStateTask).User;
+        return  user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value ?? string.Empty;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await getUserId();
+        context = await DbFactory.CreateDbContextAsync();
+        FeedingRecords = context.FeedingRecords.Where(x => x.UserId.ToString() == userId );
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

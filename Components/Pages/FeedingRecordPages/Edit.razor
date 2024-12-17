@@ -1,0 +1,118 @@
+﻿@page "/feedingrecords/edit"
+@using Microsoft.EntityFrameworkCore
+@using BabyData.Data
+@inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>FeedingRecord</h2>
+<hr />
+@if (FeedingRecord is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="FeedingRecord" OnValidSubmit="UpdateFeedingRecord" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="FeedingRecord.Id" value="@FeedingRecord.Id" />
+                <input type="hidden" name="FeedingRecord.UserId" value="@FeedingRecord.UserId" />
+                <div class="mb-3">
+                    <label for="date" class="form-label">Date:</label>
+                    <InputDate Type="InputDateType.Date" id="date" @bind-Value="FeedingRecord.Date" class="form-control" />
+                    <ValidationMessage For="() => FeedingRecord.Date" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="starttime" class="form-label">StartTime:</label>
+                    <InputDate Type="InputDateType.Time" id="starttime" @bind-Value="FeedingRecord.StartTime" class="form-control" />
+                    <ValidationMessage For="() => FeedingRecord.StartTime" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="endtime" class="form-label">EndTime:</label>
+                    <InputDate Type="InputDateType.Time" id="endtime" @bind-Value="FeedingRecord.EndTime" class="form-control" />
+                    <ValidationMessage For="() => FeedingRecord.EndTime" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="feedingtype" class="form-label">FeedingType:</label>
+                    <InputSelect id="feedingtype" @bind-Value="FeedingRecord.FeedingType" class="form-control">
+                        @foreach (var option in Enum.GetValues(typeof(FeedingType)))
+                        {
+                            <option value="@option">@option</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => FeedingRecord.FeedingType" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Notes:</label>
+                    <InputTextArea id="notes" @bind-Value="FeedingRecord.Notes" class="form-control" />
+                    <ValidationMessage For="() => FeedingRecord.Notes" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/feedingrecords">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    // [SupplyParameterFromQuery]
+    // private Guid UserId { get; set; }
+
+    [SupplyParameterFromForm]
+    private FeedingRecord? FeedingRecord { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        FeedingRecord ??= await context.FeedingRecords.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (FeedingRecord is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateFeedingRecord()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(FeedingRecord!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!FeedingRecordExists(FeedingRecord!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/feedingrecords");
+    }
+
+    private bool FeedingRecordExists(Guid id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.FeedingRecords.Any(e => e.Id == id);
+    }
+}

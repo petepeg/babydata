@@ -1,9 +1,22 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BabyData.ExtentionMethods;
+using System.ComponentModel.DataAnnotations;
 
 namespace BabyData.Data
 {
     public class FeedingRecord
     {
+        public FeedingRecord()
+        {
+            
+        }
+        public void SetDefaultTime(DateTime now)
+        {
+            now = now.TrimSeconds();
+            this.StartTime = TimeOnly.FromDateTime(now);
+            this.EndTime = TimeOnly.FromDateTime(now);
+            this.Date = DateOnly.FromDateTime(now);
+        }
+
         [Key]
         public Guid Id { get; set; }
         [Required]

@@ -1,0 +1,87 @@
+﻿@page "/feedingrecords/create"
+@using BabyData.Components.Account
+@using Microsoft.EntityFrameworkCore
+@using BabyData.Data
+@inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject IdentityUserAccessor UserAccessor
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Feeding Record</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="FeedingRecord" OnValidSubmit="AddFeedingRecord" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+
+            <div class="mb-3">
+                <label for="date" class="form-label">Date:</label> 
+                <InputDate Type="InputDateType.Date" id="date" @bind-Value="FeedingRecord.Date" class="form-control" />
+                <ValidationMessage For="() => FeedingRecord.Date" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="starttime" class="form-label">StartTime:</label> 
+                <InputDate Type="InputDateType.Time" id="starttime" @bind-Value="FeedingRecord.StartTime" class="form-control" />
+                <ValidationMessage For="() => FeedingRecord.StartTime" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="endtime" class="form-label">EndTime:</label> 
+                <InputDate Type="InputDateType.Time" id="endtime" @bind-Value="FeedingRecord.EndTime" class="form-control" />
+                <ValidationMessage For="() => FeedingRecord.EndTime" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="feedingtype" class="form-label">FeedingType:</label> 
+                <InputSelect id="feedingtype" @bind-Value="FeedingRecord.FeedingType" class="form-control">
+                    @foreach (var option in Enum.GetValues(typeof(FeedingType)))
+                    {
+                        <option value="@option">@option</option>
+                    }    
+                </InputSelect>
+                <ValidationMessage For="() => FeedingRecord.FeedingType" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes:</label> 
+                <InputTextArea id="notes" @bind-Value="FeedingRecord.Notes" class="form-control" /> 
+                <ValidationMessage For="() => FeedingRecord.Notes" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/feedingrecords">Back to List</a>
+</div>
+
+@code {
+    private ApplicationUser user = default!;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private FeedingRecord FeedingRecord { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+
+        DateTime now = DateTime.Now;
+        FeedingRecord.SetDefaultTime(now);
+        FeedingRecord.UserId = Guid.Parse(user.Id);
+
+    }
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddFeedingRecord()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.FeedingRecords.Add(FeedingRecord);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/feedingrecords");
+    }
+}

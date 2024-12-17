@@ -18,3 +18,14 @@
 </body>
 
 </html>
+
+@* <Routes @rendermode="RenderModeForPage" />
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private IComponentRenderMode? RenderModeForPage =>
+        HttpContext.GetEndpoint()?.Metadata.GetMetadata<RenderModeAttribute>()?
+            .Mode;
+} *@
