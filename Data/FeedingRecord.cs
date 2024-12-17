@@ -26,6 +26,8 @@ namespace BabyData.Data
         public DateOnly Date {  get; set; }
         public FeedingType FeedingType { get; set; }
         public string Notes { get; set; } = string.Empty;
+
+        public TimeSpan ElapsedTime => EndTime - StartTime;
     }
 
     public enum FeedingType
