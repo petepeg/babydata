@@ -6,6 +6,7 @@
 @implements IAsyncDisposable
 @inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager Navigation
+@inject IUserIdentityProcessor UserIdentityProcessor
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 
@@ -52,19 +53,10 @@ else
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; } = default!;
 
-    async Task<string> getUserName()
-    {
-        return (await authenticationStateTask)?.User?.Identity?.Name ?? string.Empty;
-    }
-    async Task<string> getUserId()
-    {
-        var user = (await authenticationStateTask).User;
-        return  user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value ?? string.Empty;
-    }
-
     protected override async Task OnInitializedAsync()
     {
-        var userId = await getUserId();
+        var userId = await UserIdentityProcessor.GetCurrentUserId();
+
         context = await DbFactory.CreateDbContextAsync();
         FeedingRecords = context.FeedingRecords.Where(x => x.UserId.ToString() == userId );
     }
