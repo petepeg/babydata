@@ -10,13 +10,45 @@
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 
+<style>
+    tr {
+        position: relative;
+    }
+
+    .click-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        cursor: pointer;
+    }
+
+    .bi {
+        display: inline-block;
+        position: relative;
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-right: 0.75rem;
+        top: 0.25rem;
+        background-size: cover;
+    }
+
+    .bi-heart-fill {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='black' class='bi bi-heart-fill' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314'/%3E%3C/svg%3E");
+    }
+
+    .bi-hexagon {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='black' class='bi bi-hexagon' viewBox='0 0 16 16'%3E%3Cpath d='M14 4.577v6.846L8 15l-6-3.577V4.577L8 1zM8.5.134a1 1 0 0 0-1 0l-6 3.577a1 1 0 0 0-.5.866v6.846a1 1 0 0 0 .5.866l6 3.577a1 1 0 0 0 1 0l6-3.577a1 1 0 0 0 .5-.866V4.577a1 1 0 0 0-.5-.866z'/%3E%3C/svg%3E");
+    }
+</style>
 
 <PageTitle>Feeding Records</PageTitle>
 
 <h1>Feeding Records</h1>
 
 <p>
-    <a href="feedingrecords/create">Create New</a>
+	<a href="feedingrecords/create" class="btn btn-primary">Create New</a>
 </p>
 
 @if (FeedingRecords == null)
@@ -25,17 +57,17 @@
 }
 else
 {
-    <QuickGrid Class="table" Items="FeedingRecords" Pagination="paginationState">
-        <PropertyColumn Property="feedingrecord => feedingrecord.StartTime" />
-        <PropertyColumn Property="feedingrecord => feedingrecord.EndTime" />
-        <PropertyColumn Property="feedingrecord => feedingrecord.Date" Sortable="true" />
-        <PropertyColumn Property="feedingrecord => feedingrecord.FeedingType" />
-        <PropertyColumn Property="feedingrecord => feedingrecord.Notes" />
 
-        <TemplateColumn Context="feedingrecord">
-            <a href="@($"feedingrecords/edit?id={feedingrecord.Id}")">Edit</a> |
-            <a href="@($"feedingrecords/details?id={feedingrecord.Id}")">Details</a> |
-            <a href="@($"feedingrecords/delete?id={feedingrecord.Id}")">Delete</a>
+    <QuickGrid Class="table table-striped table-hover w-auto" Items="FeedingRecords" Pagination="paginationState">
+        <TemplateColumn Title="Date" SortBy="@SortByDate" >
+            <div class="click-area" @onclick="() => RowClick(context)"></div>
+            <i class="bi bi-hexagon"></i>
+            <span>@context.Date.ToString()</span>
+            <p class="text-center mb-0">@context.StartTime.ToString() - @context.EndTime.ToString()</p>
+        </TemplateColumn>
+        <TemplateColumn>
+            <p class="text-center mb-0 mt-0">something?</p>
+            <p class="small text-center mb-0 mt-0">@context.FeedingType</p>
         </TemplateColumn>
     </QuickGrid>
 
@@ -47,8 +79,13 @@ else
 @code {
     private ApplicationDbContext context = default!;
     private IQueryable<FeedingRecord>? FeedingRecords;
+    private FeedingRecord? selected;
 
-    PaginationState paginationState = new() { ItemsPerPage = 10 };
+    GridSort<FeedingRecord> SortByDate = GridSort<FeedingRecord>
+    .ByAscending(x => x.Date)
+    .ThenAscending(x => x.StartTime);
+
+    PaginationState paginationState = new() { ItemsPerPage = 15 };
 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; } = default!;
@@ -58,8 +95,10 @@ else
         var userId = await UserIdentityProcessor.GetCurrentUserId();
 
         context = await DbFactory.CreateDbContextAsync();
-        FeedingRecords = context.FeedingRecords.Where(x => x.UserId.ToString() == userId );
+        FeedingRecords = context.FeedingRecords.Where(x => x.UserId.ToString() == userId);
     }
+
+    private void RowClick(FeedingRecord feedingRecord) => Navigation.NavigateTo($"feedingrecords/details?id={feedingRecord.Id}");
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }

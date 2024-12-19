@@ -29,8 +29,11 @@
             <dd class="col-sm-10">@feedingrecord.Notes</dd>
         </dl>
         <div>
-            <a href="@($"/feedingrecords/edit?id={feedingrecord.Id}")">Edit</a> |
-            <a href="@($"/feedingrecords")">Back to List</a>
+            <a href="@($"/feedingrecords/edit?id={feedingrecord.Id}")" class="btn btn-primary">Edit</a>
+            <a href="@($"feedingrecords/delete?id={feedingrecord.Id}")" class="btn btn-danger">Delete</a>
+        </div>
+        <div class="float-end">
+            <a href="@($"/feedingrecords")" class="btn btn-primary ">Back to List</a>
         </div>
     }
 </div>

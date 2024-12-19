@@ -7,10 +7,7 @@ namespace BabyData.Data
     {
         public FeedingRecord()
         {
-            
-        }
-        public void SetDefaultTime(DateTime now)
-        {
+            var now = DateTime.Now;
             now = now.TrimSeconds();
             this.StartTime = TimeOnly.FromDateTime(now);
             this.EndTime = TimeOnly.FromDateTime(now);

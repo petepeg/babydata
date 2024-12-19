@@ -64,16 +64,14 @@
     private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
-    private FeedingRecord FeedingRecord { get; set; } = new();
+    private FeedingRecord FeedingRecord { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        FeedingRecord ??= new FeedingRecord();
+
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-
-        DateTime now = DateTime.Now;
-        FeedingRecord.SetDefaultTime(now);
         FeedingRecord.UserId = Guid.Parse(user.Id);
-
     }
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
