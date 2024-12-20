@@ -1,0 +1,61 @@
+﻿@using BabyData.Components.Account
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Microsoft.EntityFrameworkCore
+@using BabyData.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
+@inject IUserIdentityProcessor UserIdentityProcessor
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+@if (Babies is null)
+{
+        <a href="https://learn.microsoft.com/aspnet/core/">Add New Baby</a>
+}
+else
+{
+    <div class="mb-3">
+        <label for="babySelect" class="form-label">Select Baby:</label>
+        <InputSelect id="babySelect" @bind-Value="SelectedBaby" @bind-Value:after="HandleValueChanged" class="form-control">
+            @foreach (var option in Babies)
+            {
+                <option value="@option.Id">@option.Name</option>
+            }
+
+        </InputSelect>
+        <a href="/baby/create">Add New Baby</a>
+    </div>
+}
+
+
+@code {
+    private ApplicationDbContext context = default!;
+    private List<Baby> Babies = new();
+
+    private Guid? SelectedBaby { get; set; }
+    
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<Baby> OnValueChanged { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await UserIdentityProcessor.GetCurrentUserId();
+
+        context = await DbFactory.CreateDbContextAsync();
+        Babies = await context.Babies.Where(x => x.UserId.ToString() == userId).ToListAsync();
+        SelectedBaby ??= Babies.FirstOrDefault()?.Id;
+        await HandleValueChanged();
+    }
+
+    private async Task HandleValueChanged()
+    {
+        await OnValueChanged.InvokeAsync(Babies.Single(x => x.Id == SelectedBaby));
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+
+}

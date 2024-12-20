@@ -1,0 +1,60 @@
+﻿@page "/baby/create"
+@using BabyData.Components.Account
+@using Microsoft.EntityFrameworkCore
+@using BabyData.Data
+@inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject IdentityUserAccessor UserAccessor
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Feeding Record</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Baby" OnValidSubmit="AddBaby" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label> 
+                <InputText id="name" @bind-Value="Baby.Name" class="form-control" />
+                <ValidationMessage For="() => Baby.Name" class="text-danger" /> 
+            </div>       
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/">Back To</a>
+</div>
+
+@code {
+    private ApplicationUser user = default!;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private Baby Baby { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Baby ??= new Baby();
+
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        Baby.UserId = Guid.Parse(user.Id);
+    }
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddBaby()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Babies.Add(Baby);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/");
+    }
+}

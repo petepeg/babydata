@@ -18,6 +18,8 @@ namespace BabyData.Data
         public Guid Id { get; set; }
         [Required]
         public Guid UserId { get; set; }
+        [Required]
+        public Guid BabyId { get; set; }
         public TimeOnly StartTime { get; set; }
         public TimeOnly EndTime { get; set; }
         public DateOnly Date {  get; set; }

@@ -44,12 +44,20 @@
 </style>
 
 <PageTitle>Feeding Records</PageTitle>
-
+<BabyData.Components.Pages.BabyPages.BabyComponent OnValueChanged="OnValueChanged" />
+<div>@SelectedBaby?.Name</div>
 <h1>Feeding Records</h1>
 
+@if (SelectedBaby is null)
+{
+    <a href="" class="btn btn-primary">Create New</a>
+}
+else 
+{
 <p>
-	<a href="feedingrecords/create" class="btn btn-primary">Create New</a>
+    <a href="feedingrecords/create?BabyId=@SelectedBaby.Id" class="btn btn-primary">Create New</a>
 </p>
+}
 
 @if (FeedingRecords == null)
 {
@@ -58,7 +66,7 @@
 else
 {
 
-    <QuickGrid Class="table table-striped table-hover w-auto" Items="FeedingRecords" Pagination="paginationState">
+    <QuickGrid Class="table table-striped table-hover w-auto" Items="FilteredFeedingRecords" Pagination="paginationState">
         <TemplateColumn Title="Date" SortBy="@SortByDate" >
             <div class="click-area" @onclick="() => RowClick(context)"></div>
             <i class="bi bi-hexagon"></i>
@@ -79,7 +87,18 @@ else
 @code {
     private ApplicationDbContext context = default!;
     private IQueryable<FeedingRecord>? FeedingRecords;
-    private FeedingRecord? selected;
+    private IQueryable<FeedingRecord>? FilteredFeedingRecords
+    {
+        get
+        {
+            if (SelectedBaby is null)
+                return new List<FeedingRecord>().AsQueryable();
+
+            return FeedingRecords?.Where(fr => fr.BabyId == SelectedBaby.Id);
+
+            
+        }
+    }
 
     GridSort<FeedingRecord> SortByDate = GridSort<FeedingRecord>
     .ByAscending(x => x.Date)
@@ -90,15 +109,23 @@ else
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; } = default!;
 
+    private Baby SelectedBaby { get; set; } = default!;
+
+
     protected override async Task OnInitializedAsync()
     {
         var userId = await UserIdentityProcessor.GetCurrentUserId();
 
         context = await DbFactory.CreateDbContextAsync();
-        FeedingRecords = context.FeedingRecords.Where(x => x.UserId.ToString() == userId);
+        FeedingRecords = (await context.FeedingRecords.Where(x => x.UserId.ToString() == userId).ToListAsync()).AsQueryable();
     }
 
     private void RowClick(FeedingRecord feedingRecord) => Navigation.NavigateTo($"feedingrecords/details?id={feedingRecord.Id}");
+
+    private void OnValueChanged(Baby newValue)
+    {
+        SelectedBaby = newValue;
+    }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }
