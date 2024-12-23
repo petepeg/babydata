@@ -8,12 +8,10 @@
 
 <PageTitle>Create</PageTitle>
 
-<h1>Create</h1>
-
-<h2>Feeding Record</h2>
+<h3>New Feeding Record</h3>
 <hr />
-<div class="row">
-    <div class="col-md-4">
+<div class="d-flex row">
+    <div class="d-flex col-4 w-100">
         <EditForm method="post" Model="FeedingRecord" OnValidSubmit="AddFeedingRecord" FormName="create" Enhance>
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert"/>
@@ -52,14 +50,11 @@
                 <label for="notes" class="form-label">Notes:</label> 
                 <InputTextArea id="notes" @bind-Value="FeedingRecord.Notes" class="form-control" /> 
                 <ValidationMessage For="() => FeedingRecord.Notes" class="text-danger" /> 
-            </div>        
+            </div>
+            <a class="btn btn-warning" href="/feedingrecords">Back to List</a>
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
-</div>
-
-<div>
-    <a href="/feedingrecords">Back to List</a>
 </div>
 
 @code {
