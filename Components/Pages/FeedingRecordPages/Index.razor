@@ -12,70 +12,57 @@
 @* prevent double render, consider persisiting state https://jonhilton.net/persist-state-between-renders-net8/#:%7E:text=Chances%20are%20it%27s%20down%20to,show%20something%20nice%20and%20quickly *@
 @rendermode @(new InteractiveServerRenderMode(false)) 
 
-<style>
-    tr {
-        position: relative;
+<div>
+    <PageTitle>Feeding Records</PageTitle>
+    <h1>Feeding Records</h1>
+
+    @if (FilteredFeedingRecords == null)
+    {
+        <p><em>Loading...</em></p>
     }
+    else
+    {
+        <div class="d-flex justify-content-end">
+            <BabyData.Components.Pages.BabyPages.BabyComponent Babies="Babies" SelectedBabyId="SelectedBaby.Id" OnValueChanged="OnValueChanged" />
+        </div>
 
-    .click-area {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        cursor: pointer;
+        <p><a href="feedingrecords/create?BabyId=@SelectedBaby.Id" class="btn btn-primary w-100">Create New</a></p>
+
+        <div>
+            <InputSelect id="daysPreviousSelect" @bind-Value="NumberOfDays" class="form-select form-select-sm mb-3 w-auto">
+                <option value="1">Today</option>
+                <option value="7">Last Week</option>
+                <option value="14">Last Two Weeks</option>
+                <option value="30">Last Month</option>
+                <option value="0">All</option>
+            </InputSelect>
+        </div>
+
+        <QuickGrid Class="table table-striped table-hover w-auto" Items="FilteredFeedingRecords" Pagination="paginationState">
+            <TemplateColumn Title="Date" SortBy="@SortByDate">
+
+                <div class="click-area" @onclick="() => RowClick(context)"></div>
+                <i class="bi bi-hexagon"></i>
+                <span>@context.Date.ToString()</span>
+                <p class="text-center mb-0">@context.StartTime.ToString() - @context.EndTime.ToString()</p>
+            </TemplateColumn>
+            <TemplateColumn>
+                <p class="small text-center mb-0 mt-0">@context.FeedingType</p>
+                @if (context.FeedingType != FeedingType.Breast)
+                {
+                    <p class="text-center mb-0 mt-0">@context.QuantityInOz oz</p>
+                }
+                else
+                {
+                    <p class="text-center mb-0 mt-0">@context.ElapsedTime.TotalMinutes min</p>
+                }
+            </TemplateColumn>
+        </QuickGrid>
+
+        <Paginator State="paginationState" />
+
     }
-
-    .bi {
-        display: inline-block;
-        position: relative;
-        width: 1.25rem;
-        height: 1.25rem;
-        margin-right: 0.75rem;
-        top: 0.25rem;
-        background-size: cover;
-    }
-
-    .bi-heart-fill {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='black' class='bi bi-heart-fill' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314'/%3E%3C/svg%3E");
-    }
-
-    .bi-hexagon {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='black' class='bi bi-hexagon' viewBox='0 0 16 16'%3E%3Cpath d='M14 4.577v6.846L8 15l-6-3.577V4.577L8 1zM8.5.134a1 1 0 0 0-1 0l-6 3.577a1 1 0 0 0-.5.866v6.846a1 1 0 0 0 .5.866l6 3.577a1 1 0 0 0 1 0l6-3.577a1 1 0 0 0 .5-.866V4.577a1 1 0 0 0-.5-.866z'/%3E%3C/svg%3E");
-    }
-</style>
-
-<PageTitle>Feeding Records</PageTitle>
-<h1>Feeding Records</h1>
-
-@if (FilteredFeedingRecords == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <BabyData.Components.Pages.BabyPages.BabyComponent Babies="Babies" SelectedBabyId="SelectedBaby.Id" OnValueChanged="OnValueChanged" />
-    <p>
-        <a href="feedingrecords/create?BabyId=@SelectedBaby.Id" class="btn btn-primary">Create New</a>
-    </p>
-
-    <QuickGrid Class="table table-striped table-hover w-auto" Items="FilteredFeedingRecords" Pagination="paginationState">
-        <TemplateColumn Title="Date" SortBy="@SortByDate" >
-            <div class="click-area" @onclick="() => RowClick(context)"></div>
-            <i class="bi bi-hexagon"></i>
-            <span>@context.Date.ToString()</span>
-            <p class="text-center mb-0">@context.StartTime.ToString() - @context.EndTime.ToString()</p>
-        </TemplateColumn>
-        <TemplateColumn>
-            <p class="text-center mb-0 mt-0">something?</p>
-            <p class="small text-center mb-0 mt-0">@context.FeedingType</p>
-        </TemplateColumn>
-    </QuickGrid>
-
-    <Paginator State="paginationState" />
-
-
-}
+</div>
 
 @code {
     private ApplicationDbContext context = default!;
@@ -87,9 +74,15 @@ else
             if (SelectedBaby is null)
                 return null;
 
-            return FeedingRecords?.Where(fr => fr.BabyId == SelectedBaby.Id);
+            var filtered = FeedingRecords?.Where(fr => fr.BabyId == SelectedBaby.Id);
 
-
+            if (NumberOfDays > 0)
+            {
+                var numDays = TimeSpan.FromDays(NumberOfDays);
+                var now = DateTime.Now;
+                filtered = filtered.Where(fr => fr.Date >= DateOnly.FromDateTime(now.Subtract(numDays)));
+            }
+            return filtered;
         }
     }
 
@@ -104,7 +97,7 @@ else
 
     private Baby SelectedBaby { get; set; } = new();
     private List<Baby> Babies { get; set; } = new();
-
+    private int NumberOfDays = 0; 
 
     protected override async Task OnInitializedAsync()
     {

@@ -24,6 +24,7 @@ namespace BabyData.Data
         public TimeOnly EndTime { get; set; }
         public DateOnly Date {  get; set; }
         public FeedingType FeedingType { get; set; }
+        public decimal QuantityInOz { get; set; }
         public string Notes { get; set; } = string.Empty;
 
         public TimeSpan ElapsedTime => EndTime - StartTime;

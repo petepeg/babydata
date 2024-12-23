@@ -42,7 +42,12 @@
                     }    
                 </InputSelect>
                 <ValidationMessage For="() => FeedingRecord.FeedingType" class="text-danger" /> 
-            </div>        
+            </div>
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Qunatity In Ounces</label>
+                <InputNumber id="quantity" @bind-Value="FeedingRecord.QuantityInOz" class="form-control" />
+                <ValidationMessage For="() => FeedingRecord.QuantityInOz" class="text-danger" />
+            </div>
             <div class="mb-3">
                 <label for="notes" class="form-label">Notes:</label> 
                 <InputTextArea id="notes" @bind-Value="FeedingRecord.Notes" class="form-control" /> 

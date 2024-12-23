@@ -4,8 +4,7 @@
 @rendermode @(new InteractiveServerRenderMode(false))
 
 <div class="mb-3">
-    <label for="babySelect" class="form-label">Select Baby:</label>
-    <InputSelect id="babySelect" @bind-Value="SelectedBabyId" @bind-Value:after="HandleValueChanged" class="form-control">
+    <InputSelect id="babySelect" @bind-Value="SelectedBabyId" @bind-Value:after="HandleValueChanged" class="form-select form-select-sm w-auto">
         @if (Babies is null)
         {
             <option> Loading</option>
@@ -18,7 +17,6 @@
             }
         }
     </InputSelect>
-    <a href="/baby/create">Add New Baby</a>
 </div>
 
 @code {
