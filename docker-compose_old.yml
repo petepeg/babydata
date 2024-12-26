@@ -1,0 +1,26 @@
+﻿# docker-compose.yml
+
+services:
+  blazor:
+    build: .
+    ports:
+      - "32772:8080"
+      - "32773:8081"
+    depends_on:
+      - mssql
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=host.docker.internal,1433;Database=BabyData;MultipleActiveResultSets=true;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rd;Encrypt=false
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    volumes:
+      - sqlvolume:/var/opt/mssql
+    environment:
+      - SA_PASSWORD=P@ssw0rd
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+
+volumes:
+  sqlvolume:
