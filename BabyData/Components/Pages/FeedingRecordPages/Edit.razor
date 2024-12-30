@@ -17,12 +17,13 @@
 else
 {
     <div class="row">
-        <div class="col-md-4">
+        <div class="col">
             <EditForm method="post" Model="FeedingRecord" OnValidSubmit="UpdateFeedingRecord" FormName="edit" Enhance>
                 <DataAnnotationsValidator />
                 <ValidationSummary role="alert"/>
                 <input type="hidden" name="FeedingRecord.Id" value="@FeedingRecord.Id" />
                 <input type="hidden" name="FeedingRecord.UserId" value="@FeedingRecord.UserId" />
+                <input type="hidden" name="FeedingRecord.BabyId" value="@FeedingRecord.BabyId" />
                 <div class="mb-3">
                     <label for="date" class="form-label">Date:</label>
                     <InputDate Type="InputDateType.Date" id="date" @bind-Value="FeedingRecord.Date" class="form-control" />
