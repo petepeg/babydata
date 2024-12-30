@@ -9,6 +9,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=host.docker.internal,1433;Database=BabyData;MultipleActiveResultSets=true;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rd;Encrypt=false
+      - SendGridKey=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
 
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest

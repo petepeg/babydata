@@ -13,7 +13,7 @@
 <h2>Feeding Record</h2>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col">
         <EditForm method="post" Model="Baby" OnValidSubmit="AddBaby" FormName="create" Enhance>
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert"/>
@@ -23,14 +23,15 @@
                 <InputText id="name" @bind-Value="Baby.Name" class="form-control" />
                 <ValidationMessage For="() => Baby.Name" class="text-danger" /> 
             </div>       
-            <button type="submit" class="btn btn-primary">Create</button>
+            <div>
+                <button type="submit" class="btn btn-primary w-100">Create</button>
+                <a href="/" class="btn btn-secondary w-100 mt-3">Back To</a>
+            </div>
         </EditForm>
     </div>
 </div>
 
-<div>
-    <a href="/">Back To</a>
-</div>
+
 
 @code {
     private ApplicationUser user = default!;
