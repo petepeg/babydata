@@ -53,7 +53,7 @@
             </div>
             <div class="mb-3">
                 <label for="feedingtype" class="form-label">FeedingType:</label> 
-                <InputSelect id="feedingtype" @bind-Value="FeedingRecord.FeedingType" class="form-control">
+                <InputSelect id="feedingtype" @bind-Value="FeedingRecord.FeedingType" @bind-Value:after="FeedingTypeChanged" class="form-control">
                     @foreach (var option in Enum.GetValues(typeof(FeedingType)))
                     {
                         <option value="@option">@option</option>
@@ -61,7 +61,7 @@
                 </InputSelect>
                 <ValidationMessage For="() => FeedingRecord.FeedingType" class="text-danger" /> 
             </div>
-            <div class="mb-3">
+            <div class="mb-3" hidden="@HideQuantity">
                 <label for="quantity" class="form-label">Qunatity In Ounces</label>
                 <InputNumber id="quantity" @bind-Value="FeedingRecord.QuantityInOz" class="form-control" />
                 <ValidationMessage For="() => FeedingRecord.QuantityInOz" class="text-danger" />
@@ -84,6 +84,8 @@
     [SupplyParameterFromQuery]
     private Guid BabyId { get; set; }
 
+    private bool HideQuantity { get; set; } = true;
+
     private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
 
     protected override async Task OnInitializedAsync()
@@ -105,5 +107,17 @@
         context.FeedingRecords.Add(FeedingRecord);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/feedingrecords");
+    }
+
+    private void FeedingTypeChanged()
+    {
+        if (FeedingRecord.FeedingType == FeedingType.Bottle || FeedingRecord.FeedingType == FeedingType.Solid)
+        {
+            HideQuantity = false;
+        }
+        else
+        {
+            HideQuantity = true;
+        }
     }
 }
