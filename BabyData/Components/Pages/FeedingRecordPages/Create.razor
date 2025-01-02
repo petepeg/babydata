@@ -4,7 +4,8 @@
 @using BabyData.Data
 @inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
-@inject IdentityUserAccessor UserAccessor
+@inject IUserIdentityProcessor UserIdentityProcessor
+@rendermode @(new InteractiveServerRenderMode(false))
 
 <PageTitle>Create</PageTitle>
 
@@ -16,21 +17,40 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert"/>
 
-            <div class="mb-3">
-                <label for="date" class="form-label">Date:</label> 
-                <InputDate Type="InputDateType.Date" id="date" @bind-Value="FeedingRecord.Date" class="form-control" />
-                <ValidationMessage For="() => FeedingRecord.Date" class="text-danger" /> 
-            </div>        
+            @*             <div class="mb-3">
+                <label for="date" class="form-label">Date:</label>
+                <InputDate Type="InputDateType.Date" id="date" @bind-Value="FeedingRecordLocalDateTimes.DateLocal" class="form-control" />
+                <ValidationMessage For="() => FeedingRecordLocalDateTimes.DateLocal" class="text-danger" />
+            </div>   *@      
             <div class="mb-3">
                 <label for="starttime" class="form-label">StartTime:</label> 
-                <InputDate Type="InputDateType.Time" id="starttime" @bind-Value="FeedingRecord.StartTime" class="form-control" />
+                <InputDate Type="InputDateType.DateTimeLocal" id="starttime" @bind-Value="FeedingRecord.LocalDateTimes.StartTimeLocal" class="form-control" />
                 <ValidationMessage For="() => FeedingRecord.StartTime" class="text-danger" /> 
-            </div>        
+            </div>
+            <div class="btn-group mb-2" role="group" aria-label="StartTime Adjustments">
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeStartTime(-1)">-1min</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeStartTime(-5)">-5min</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeStartTime(-30)">-30min</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeStartTime(1)">+1min</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeStartTime(5)">+5min</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeStartTime(30)">+30min</button>
+            </div>
             <div class="mb-3">
                 <label for="endtime" class="form-label">EndTime:</label> 
-                <InputDate Type="InputDateType.Time" id="endtime" @bind-Value="FeedingRecord.EndTime" class="form-control" />
+                <InputDate Type="InputDateType.DateTimeLocal" id="endtime" @bind-Value="FeedingRecord.LocalDateTimes.EndTimeLocal" class="form-control" />
                 <ValidationMessage For="() => FeedingRecord.EndTime" class="text-danger" /> 
-            </div>        
+            </div>
+            <div class="btn-group mb-2" role="group" aria-label="EndTime Adjustments">
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeEndTime(-1)">-1min</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeEndTime(-5)">-5min</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeEndTime(-30)">-30min</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeEndTime(1)">+1min</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeEndTime(5)">+5min</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="() => FeedingRecord.LocalDateTimes.NudgeEndTime(30)">+30min</button>
+            </div>
+            <div>
+                <p>Total Time: @FeedingRecord.LocalDateTimes.ElapsedTime.ToString()</p>
+            </div>
             <div class="mb-3">
                 <label for="feedingtype" class="form-label">FeedingType:</label> 
                 <InputSelect id="feedingtype" @bind-Value="FeedingRecord.FeedingType" class="form-control">
@@ -58,29 +78,29 @@
 </div>
 
 @code {
-    private ApplicationUser user = default!;
-
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
     [SupplyParameterFromForm]
     private FeedingRecord FeedingRecord { get; set; } = default!;
 
     [SupplyParameterFromQuery]
     private Guid BabyId { get; set; }
 
+    private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+
     protected override async Task OnInitializedAsync()
     {
         FeedingRecord ??= new FeedingRecord();
         FeedingRecord.BabyId = BabyId;
+        FeedingRecord.LocalDateTimes ??= new FeedingRecordLocalDateTimes(FeedingRecord, timeZoneInfo);
 
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-        FeedingRecord.UserId = Guid.Parse(user.Id);
+        var userId = await UserIdentityProcessor.GetCurrentUserId();
+        FeedingRecord.UserId = Guid.Parse(userId);
     }
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddFeedingRecord()
     {
+        FeedingRecord.SetTimes();
+
         using var context = DbFactory.CreateDbContext();
         context.FeedingRecords.Add(FeedingRecord);
         await context.SaveChangesAsync();

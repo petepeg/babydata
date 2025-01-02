@@ -24,20 +24,20 @@ else
                 <input type="hidden" name="FeedingRecord.Id" value="@FeedingRecord.Id" />
                 <input type="hidden" name="FeedingRecord.UserId" value="@FeedingRecord.UserId" />
                 <input type="hidden" name="FeedingRecord.BabyId" value="@FeedingRecord.BabyId" />
-                <div class="mb-3">
+@*                 <div class="mb-3">
                     <label for="date" class="form-label">Date:</label>
-                    <InputDate Type="InputDateType.Date" id="date" @bind-Value="FeedingRecord.Date" class="form-control" />
-                    <ValidationMessage For="() => FeedingRecord.Date" class="text-danger" />
-                </div>
+                    <InputDate Type="InputDateType.Date" id="date" @bind-Value="FeedingRecordLocalDateTimes.DateLocal" class="form-control" />
+                    <ValidationMessage For="() => FeedingRecordLocalDateTimes.DateLocal" class="text-danger" />
+                </div> *@
                 <div class="mb-3">
                     <label for="starttime" class="form-label">StartTime:</label>
-                    <InputDate Type="InputDateType.Time" id="starttime" @bind-Value="FeedingRecord.StartTime" class="form-control" />
-                    <ValidationMessage For="() => FeedingRecord.StartTime" class="text-danger" />
+                    <InputDate Type="InputDateType.DateTimeLocal" id="starttime" @bind-Value="FeedingRecord.LocalDateTimes.StartTimeLocal" class="form-control" />
+                    <ValidationMessage For="() => FeedingRecord.LocalDateTimes.StartTimeLocal" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="endtime" class="form-label">EndTime:</label>
-                    <InputDate Type="InputDateType.Time" id="endtime" @bind-Value="FeedingRecord.EndTime" class="form-control" />
-                    <ValidationMessage For="() => FeedingRecord.EndTime" class="text-danger" />
+                    <InputDate Type="InputDateType.DateTimeLocal" id="endtime" @bind-Value="FeedingRecord.LocalDateTimes.EndTimeLocal" class="form-control" />
+                    <ValidationMessage For="() => FeedingRecord.LocalDateTimes.EndTimeLocal" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="feedingtype" class="form-label">FeedingType:</label>
@@ -68,6 +68,8 @@ else
     [SupplyParameterFromQuery]
     private Guid Id { get; set; }
 
+    private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+
     // [SupplyParameterFromQuery]
     // private Guid UserId { get; set; }
 
@@ -78,6 +80,8 @@ else
     {
         using var context = DbFactory.CreateDbContext();
         FeedingRecord ??= await context.FeedingRecords.FirstOrDefaultAsync(m => m.Id == Id);
+        FeedingRecord.LocalDateTimes ??= new FeedingRecordLocalDateTimes(FeedingRecord, timeZoneInfo);
+
 
         if (FeedingRecord is null)
         {
@@ -89,6 +93,8 @@ else
     // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task UpdateFeedingRecord()
     {
+        FeedingRecord.SetTimes();
+
         using var context = DbFactory.CreateDbContext();
         context.Attach(FeedingRecord!).State = EntityState.Modified;
 

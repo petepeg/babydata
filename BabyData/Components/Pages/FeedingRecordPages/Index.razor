@@ -43,8 +43,8 @@
 
                 <div class="click-area" @onclick="() => RowClick(context)"></div>
                 <i class="bi bi-hexagon"></i>
-                <span>@context.Date.ToString()</span>
-                <p class="text-center mb-0">@context.StartTime.ToString() - @context.EndTime.ToString()</p>
+                <span>@context.StartTime.Date.ToString()</span>
+                <p class="text-center mb-0">@context.StartTime.TimeOfDay.ToString() - @context.EndTime.TimeOfDay.ToString()</p>
             </TemplateColumn>
             <TemplateColumn>
                 <p class="small text-center mb-0 mt-0">@context.FeedingType</p>
@@ -80,15 +80,14 @@
             {
                 var numDays = TimeSpan.FromDays(NumberOfDays);
                 var now = DateTime.Now;
-                filtered = filtered.Where(fr => fr.Date >= DateOnly.FromDateTime(now.Subtract(numDays)));
+                filtered = filtered.Where(fr => fr.StartTime.Date >= now.Subtract(numDays).Date );
             }
             return filtered;
         }
     }
 
     GridSort<FeedingRecord> SortByDate = GridSort<FeedingRecord>
-    .ByAscending(x => x.Date)
-    .ThenAscending(x => x.StartTime);
+    .ByAscending(x => x.StartTime);
 
     PaginationState paginationState = new() { ItemsPerPage = 15 };
 

@@ -18,11 +18,11 @@
     else {
         <dl class="row">
             <dt class="col">Date</dt>
-            <dd class="col">@feedingrecord.Date</dd>
+            <dd class="col">@feedingrecord.StartTime.Date</dd>
             <dt class="col">StartTime</dt>
-            <dd class="col">@feedingrecord.StartTime</dd>
+            <dd class="col">@feedingrecord.StartTime.TimeOfDay</dd>
             <dt class="col">EndTime</dt>
-            <dd class="col">@feedingrecord.EndTime</dd>
+            <dd class="col">@feedingrecord.EndTime.TimeOfDay</dd>
             <dt class="col">FeedingType</dt>
             <dd class="col">@feedingrecord.FeedingType</dd>
             <dt class="col">Notes</dt>

@@ -41,10 +41,10 @@
 
         var userId = await UserIdentityProcessor.GetCurrentUserId();
 
-        var today = DateOnly.FromDateTime(DateTime.Now);
+        var today = DateTime.Now;
 
         context = await DbFactory.CreateDbContextAsync();
-        FeedingRecords = await context.FeedingRecords.Where(x => x.UserId.ToString() == userId && x.Date == today).ToListAsync();
+        FeedingRecords = await context.FeedingRecords.Where(x => x.UserId.ToString() == userId && x.StartTime.Date == today.Date).ToListAsync();
         var elaspsedTest = FeedingRecords.Select(x => x.ElapsedTime).ToList();
     }
 }
