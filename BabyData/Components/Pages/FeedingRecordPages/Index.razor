@@ -14,7 +14,7 @@
 
 <div>
     <PageTitle>Feeding Records</PageTitle>
-    <h1>Feeding Records</h1>
+    <h1 class="text-center">Feeding Records</h1>
 
     @if (FilteredFeedingRecords == null)
     {
@@ -29,7 +29,7 @@
         <p><a href="feedingrecords/create?BabyId=@SelectedBaby.Id" class="btn btn-primary w-100">Create New</a></p>
 
         <div>
-            <InputSelect id="daysPreviousSelect" @bind-Value="NumberOfDays" class="form-select form-select-sm mb-3 w-auto">
+            <InputSelect id="daysPreviousSelect" @bind-Value="NumberOfDays" class="form-select form-select-sm w-auto">
                 <option value="1">Today</option>
                 <option value="7">Last Week</option>
                 <option value="14">Last Two Weeks</option>
@@ -37,23 +37,22 @@
                 <option value="0">All</option>
             </InputSelect>
         </div>
-
-        <QuickGrid Class="table table-striped table-hover w-auto" Items="FilteredFeedingRecords" Pagination="paginationState">
+        <hr />
+        <QuickGrid Class="table table-striped table-hover mx-auto" Items="FilteredFeedingRecords" Pagination="paginationState">
             <TemplateColumn Title="Date" SortBy="@SortByDate" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true">
-
                 <div class="click-area" @onclick="() => RowClick(context)"></div>
-                <span>@context.LocalDateTimes.StartTimeLocal.ToShortDateString()</span>
-                <p class="text-center mb-0">@context.LocalDateTimes.StartTimeString - @context.LocalDateTimes.EndTimeString</p>
+                <p class="ms-2 my-0">@context.LocalDateTimes.StartTimeLocal.ToShortDateString()</p>
+                <p class="ms-2 mb-0 text-nowrap">@context.LocalDateTimes.StartTimeString - @context.LocalDateTimes.EndTimeString</p>
             </TemplateColumn>
             <TemplateColumn>
                 <p class="small text-center mb-0 mt-0">@context.FeedingType</p>
                 @if (context.FeedingType != FeedingType.Breast)
                 {
-                    <p class="text-center mb-0 mt-0">@context.QuantityInOz oz</p>
+                    <p class="text-center my-0 text-nowrap">@context.QuantityInOz oz</p>
                 }
                 else
                 {
-                    <p class="text-center mb-0 mt-0">@context.ElapsedTime.TotalMinutes min</p>
+                    <p class="text-center my-0 text-nowrap">@context.ElapsedTime.TotalMinutes min</p>
                 }
             </TemplateColumn>
         </QuickGrid>

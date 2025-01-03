@@ -14,11 +14,11 @@
 
 .bi {
     display: inline-block;
-    position: relative;
+    position: absolute;
     width: 1.25rem;
     height: 1.25rem;
     margin-right: 0.75rem;
-    top: 0.25rem;
+    top: 33%;
     background-size: cover;
 }
 
