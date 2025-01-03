@@ -18,11 +18,13 @@
     else {
         <dl class="row">
             <dt class="col">Date</dt>
-            <dd class="col">@feedingrecord.StartTime.Date</dd>
+            <dd class="col">@feedingrecord.LocalDateTimes.StartTimeLocal.ToShortDateString()</dd>
             <dt class="col">StartTime</dt>
-            <dd class="col">@feedingrecord.StartTime.TimeOfDay</dd>
+            <dd class="col">@feedingrecord.LocalDateTimes.StartTimeString</dd>
             <dt class="col">EndTime</dt>
-            <dd class="col">@feedingrecord.EndTime.TimeOfDay</dd>
+            <dd class="col">@feedingrecord.LocalDateTimes.EndTimeString</dd>
+            <dt class="col">Total Time</dt>
+            <dd class="col">@feedingrecord.LocalDateTimes.ElapsedTime</dd>
             <dt class="col">FeedingType</dt>
             <dd class="col">@feedingrecord.FeedingType</dd>
             <dt class="col">Notes</dt>
@@ -40,6 +42,7 @@
 
 @code {
     private FeedingRecord? feedingrecord;
+    private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
 
     [SupplyParameterFromQuery]
     private Guid Id { get; set; }
@@ -53,5 +56,7 @@
         {
             NavigationManager.NavigateTo("notfound");
         }
+
+        feedingrecord.SetTimeLocalFromUtc(timeZoneInfo);
     }
 }

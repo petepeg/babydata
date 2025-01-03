@@ -22,7 +22,7 @@
                          Items="FeedingRecords"
                          Name="Time Spendt Feeding"
                          SeriesType="SeriesType.Bar"
-                         XValue="e => e.StartTime"
+                         XValue="e => e.StartTimeUtc"
                          YValue="e=> (decimal)e.ElapsedTime.TotalMinutes" />
     </ApexChart>
 </div>
@@ -44,7 +44,7 @@
         var today = DateTime.Now;
 
         context = await DbFactory.CreateDbContextAsync();
-        FeedingRecords = await context.FeedingRecords.Where(x => x.UserId.ToString() == userId && x.StartTime.Date == today.Date).ToListAsync();
+        FeedingRecords = await context.FeedingRecords.Where(x => x.UserId.ToString() == userId && x.StartTimeUtc.Date == today.Date).ToListAsync();
         var elaspsedTest = FeedingRecords.Select(x => x.ElapsedTime).ToList();
     }
 }

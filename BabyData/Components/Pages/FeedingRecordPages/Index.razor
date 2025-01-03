@@ -39,12 +39,11 @@
         </div>
 
         <QuickGrid Class="table table-striped table-hover w-auto" Items="FilteredFeedingRecords" Pagination="paginationState">
-            <TemplateColumn Title="Date" SortBy="@SortByDate">
+            <TemplateColumn Title="Date" SortBy="@SortByDate" InitialSortDirection="SortDirection.Descending" IsDefaultSortColumn="true">
 
                 <div class="click-area" @onclick="() => RowClick(context)"></div>
-                <i class="bi bi-hexagon"></i>
-                <span>@context.StartTime.Date.ToString()</span>
-                <p class="text-center mb-0">@context.StartTime.TimeOfDay.ToString() - @context.EndTime.TimeOfDay.ToString()</p>
+                <span>@context.LocalDateTimes.StartTimeLocal.ToShortDateString()</span>
+                <p class="text-center mb-0">@context.LocalDateTimes.StartTimeString - @context.LocalDateTimes.EndTimeString</p>
             </TemplateColumn>
             <TemplateColumn>
                 <p class="small text-center mb-0 mt-0">@context.FeedingType</p>
@@ -66,7 +65,8 @@
 
 @code {
     private ApplicationDbContext context = default!;
-    private IQueryable<FeedingRecord>? FeedingRecords;
+    private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    private List<FeedingRecord> FeedingRecords;
     private IQueryable<FeedingRecord>? FilteredFeedingRecords
     {
         get
@@ -74,20 +74,20 @@
             if (SelectedBaby is null)
                 return null;
 
-            var filtered = FeedingRecords?.Where(fr => fr.BabyId == SelectedBaby.Id);
+            var filtered = FeedingRecords.AsQueryable().Where(fr => fr.BabyId == SelectedBaby.Id);
 
             if (NumberOfDays > 0)
             {
                 var numDays = TimeSpan.FromDays(NumberOfDays);
                 var now = DateTime.Now;
-                filtered = filtered.Where(fr => fr.StartTime.Date >= now.Subtract(numDays).Date );
+                filtered = filtered.Where(fr => fr.StartTimeUtc.Date >= now.Subtract(numDays).Date );
             }
             return filtered;
         }
     }
 
     GridSort<FeedingRecord> SortByDate = GridSort<FeedingRecord>
-    .ByAscending(x => x.StartTime);
+    .ByAscending(x => x.StartTimeUtc);
 
     PaginationState paginationState = new() { ItemsPerPage = 15 };
 
@@ -103,7 +103,9 @@
         var userId = await UserIdentityProcessor.GetCurrentUserId();
 
         context = await DbFactory.CreateDbContextAsync();
-        FeedingRecords = (await context.FeedingRecords.Where(x => x.UserId.ToString() == userId).ToListAsync()).AsQueryable();
+        FeedingRecords = (await context.FeedingRecords.Where(x => x.UserId.ToString() == userId).ToListAsync());
+        FeedingRecords.ForEach(x => x.SetTimeLocalFromUtc(timeZoneInfo));
+
         Babies = await context.Babies.Where(x => x.UserId.ToString() == userId).ToListAsync();
         SelectedBaby = Babies.Where(x => x.UserId.ToString() == userId).FirstOrDefault();
         

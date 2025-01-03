@@ -10,8 +10,9 @@ namespace BabyData.Data
         {
             var now = DateTime.Now.ToUniversalTime();
             now = now.TrimSeconds();
-            this.StartTime = now;
-            this.EndTime = now;
+            this.StartTimeUtc = now;
+            this.EndTimeUtc = now;
+            LocalDateTimes = new FeedingRecordLocalDateTimes();
         }
 
         [Key]
@@ -20,38 +21,39 @@ namespace BabyData.Data
         public Guid UserId { get; set; }
         [Required]
         public Guid BabyId { get; set; }
-        public DateTime StartTime { get; private set; }
-        public DateTime EndTime { get; private set; }
+        public DateTime StartTimeUtc { get; private set; }
+        public DateTime EndTimeUtc { get; private set; }
         public FeedingType FeedingType { get; set; }
         public decimal QuantityInOz { get; set; }
         public string Notes { get; set; } = string.Empty;
 
-        public TimeSpan ElapsedTime => EndTime - StartTime;
+        public TimeSpan ElapsedTime => EndTimeUtc - StartTimeUtc;
 
         [NotMapped]
         public FeedingRecordLocalDateTimes LocalDateTimes { get; set; }
-        public void SetTimes()
+        public void SetTimeUtcFromLocal(TimeZoneInfo sourceTimeZoneInfo)
         {
-            StartTime = LocalDateTimes.StartTimeLocal.ToUniversalTime();
-            EndTime = LocalDateTimes.EndTimeLocal.ToUniversalTime();
+            StartTimeUtc = TimeZoneInfo.ConvertTimeToUtc(LocalDateTimes.StartTimeLocal, sourceTimeZoneInfo);
+            EndTimeUtc = TimeZoneInfo.ConvertTimeToUtc(LocalDateTimes.EndTimeLocal, sourceTimeZoneInfo);
+        }
+        public void SetTimeLocalFromUtc(TimeZoneInfo timeZoneInfo)
+        {
+            LocalDateTimes.StartTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(StartTimeUtc, timeZoneInfo);
+            LocalDateTimes.EndTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(EndTimeUtc, timeZoneInfo);
+            
+            
         }
 
     }
 
     public class FeedingRecordLocalDateTimes
     {
-        public FeedingRecordLocalDateTimes()
-        {
-                
-        }
-        // model class cannot contain a public ctor with params  https://github.com/dotnet/aspnetcore/issues/55711
-        internal FeedingRecordLocalDateTimes(FeedingRecord feedingRecord, TimeZoneInfo timeZoneInfo)
-        {
-            StartTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(feedingRecord.StartTime, timeZoneInfo);
-            EndTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(feedingRecord.EndTime, timeZoneInfo);
-        }
         public DateTime StartTimeLocal { get; set; }
+        public string StartTimeString => StartTimeLocal.ToString("hh:mm tt");
+
         public DateTime EndTimeLocal { get; set; }
+        public string EndTimeString => EndTimeLocal.ToString("hh:mm tt");
+
         public TimeSpan ElapsedTime => EndTimeLocal - StartTimeLocal;
 
         public void NudgeStartTime (int min)
