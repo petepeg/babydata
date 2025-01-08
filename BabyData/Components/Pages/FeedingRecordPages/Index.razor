@@ -99,14 +99,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var userId = await UserIdentityProcessor.GetCurrentUserId();
+        var userId = Guid.Parse(await UserIdentityProcessor.GetCurrentUserId());
 
         context = await DbFactory.CreateDbContextAsync();
-        FeedingRecords = (await context.FeedingRecords.Where(x => x.UserId.ToString() == userId).ToListAsync());
+        FeedingRecords = (await context.FeedingRecords.Where(x => x.UserId == userId).ToListAsync());
         FeedingRecords.ForEach(x => x.SetTimeLocalFromUtc(timeZoneInfo));
 
-        Babies = await context.Babies.Where(x => x.UserId.ToString() == userId).ToListAsync();
-        SelectedBaby = Babies.Where(x => x.UserId.ToString() == userId).FirstOrDefault();
+        Babies = await context.Babies.Where(x => x.UserId == userId).ToListAsync();
+        SelectedBaby = Babies.Where(x => x.UserId == userId).FirstOrDefault();
         
         if (SelectedBaby is null)
         {

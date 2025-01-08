@@ -5,21 +5,23 @@ services:
       context: .
       dockerfile: BabyData/Dockerfile
     depends_on:
-      - mssql
+      - firebirdsql
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=host.docker.internal,1433;Database=BabyData;MultipleActiveResultSets=true;TrustServerCertificate=True;User Id=sa;Password=P@ssw0rd;Encrypt=false
-      - SendGridKey=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
+      - ConnectionStrings__DefaultConnection=Server=firebirdsql;Database=/var/lib/firebird/data/babydata.fdb;User=SYSDBA;Password=masterkey
 
-  mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    volumes:
-      - sqlvolume:/var/opt/mssql
+  firebirdsql:
+    image: ghcr.io/fdcastel/firebird:5.0.1-noble
+    restart: always
     environment:
-      - SA_PASSWORD=P@ssw0rd
-      - ACCEPT_EULA=Y
+      - FIREBIRD_ROOT_PASSWORD=masterkey
+      - FIREBIRD_USER=petep
+      - FIREBIRD_PASSWORD=masterkey
+      - FIREBIRD_DATABASE=babydata.fdb
+      - FIREBIRD_DATABASE_DEFAULT_CHARSET=UTF8
+      - FIREBIRD_DATABASE_PAGE_SIZE=16384 
+      - FIREBIRD_CONF_RemoteBindAddress=
     ports:
-      - "1433:1433"
-
-volumes:
-  sqlvolume:
+      - "3050:3050"
+    volumes:
+      - ./data:/var/lib/firebird/data

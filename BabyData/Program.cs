@@ -2,6 +2,7 @@
 using BabyData.Components.Account;
 using BabyData.Data;
 using BabyData.Services;
+using FirebirdSql.Data.FirebirdClient;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -28,7 +29,7 @@ builder.Services.AddAuthentication(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 //builder.Services.AddDbContext<ApplicationDbContext>(options =>
 //    options.UseSqlServer(connectionString));
-builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseFirebird(connectionString));
 
 
 builder.Services.AddQuickGridEntityFrameworkAdapter();

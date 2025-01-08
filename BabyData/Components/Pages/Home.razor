@@ -38,13 +38,13 @@
     protected override async Task OnInitializedAsync()
     {
         UserName = await UserIdentityProcessor.GetCurrentUserName() ?? "Opps";
-
-        var userId = await UserIdentityProcessor.GetCurrentUserId();
+        var id = await UserIdentityProcessor.GetCurrentUserId();
+        var userId = String.IsNullOrEmpty(id) ? Guid.Empty : Guid.Parse(id);
 
         var today = DateTime.Now;
 
         context = await DbFactory.CreateDbContextAsync();
-        FeedingRecords = await context.FeedingRecords.Where(x => x.UserId.ToString() == userId && x.StartTimeUtc.Date == today.Date).ToListAsync();
+        FeedingRecords = await context.FeedingRecords.Where(x => x.UserId == userId && x.StartTimeUtc.Date == today.Date).ToListAsync();
         var elaspsedTest = FeedingRecords.Select(x => x.ElapsedTime).ToList();
     }
 }
