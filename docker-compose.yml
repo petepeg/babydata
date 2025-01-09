@@ -9,6 +9,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=firebirdsql;Database=/var/lib/firebird/data/babydata.fdb;User=SYSDBA;Password=masterkey
+    volumes:
+      - ./DataProtection_Keys:/home/app/.aspnet/DataProtection_Keys
 
   firebirdsql:
     image: ghcr.io/fdcastel/firebird:5.0.1-noble

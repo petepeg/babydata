@@ -2,11 +2,10 @@
 using BabyData.Components.Account;
 using BabyData.Data;
 using BabyData.Services;
-using FirebirdSql.Data.FirebirdClient;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +48,9 @@ builder.Services.ConfigureApplicationCookie(options => {
 });
 builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
     options.TokenLifespan = TimeSpan.FromHours(3));
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(@"/home/app/.aspnet/DataProtection_Keys"));
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
