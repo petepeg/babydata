@@ -14,19 +14,26 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello @UserName</h1>
-<div style="width:100%">
-    <ApexChart TItem="FeedingRecord"
-               Title="Time Spent Feeding Today">
-        <ApexPointSeries TItem="FeedingRecord"
-                         Items="FeedingRecords"
-                         Name="Time Spendt Feeding"
-                         SeriesType="SeriesType.Bar"
-                         XValue="e => e.StartTimeUtc"
-                         YValue="e=> (decimal)e.ElapsedTime.TotalMinutes" />
-    </ApexChart>
-</div>
-
+@if(string.IsNullOrEmpty(UserName))
+{
+    <h1>Welcome To BabyData</h1>
+    <h3>Please register or log in to begin</h3>
+}
+else
+{
+    <h1>Hello @UserName</h1>
+    <div style="width:100%">
+        <ApexChart TItem="FeedingRecord"
+                   Title="Time Spent Feeding Today">
+            <ApexPointSeries TItem="FeedingRecord"
+                             Items="FeedingRecords"
+                             Name="Time Spendt Feeding"
+                             SeriesType="SeriesType.Bar"
+                             XValue="e => e.StartTimeUtc"
+                             YValue="e=> (decimal)e.ElapsedTime.TotalMinutes" />
+        </ApexChart>
+    </div>
+}
 
 @code {
     private string UserName { get; set; } = default!;
@@ -37,7 +44,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        UserName = await UserIdentityProcessor.GetCurrentUserName() ?? "Opps";
+        UserName = await UserIdentityProcessor.GetCurrentUserName() ?? "";
         var id = await UserIdentityProcessor.GetCurrentUserId();
         var userId = String.IsNullOrEmpty(id) ? Guid.Empty : Guid.Parse(id);
 
