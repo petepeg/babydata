@@ -47,7 +47,7 @@
             </div>
             <div class="mb-3">
                 <label for="feedingtype" class="form-label">FeedingType:</label> 
-                <InputSelect id="feedingtype" @bind-Value="FeedingRecord.FeedingType" @bind-Value:after="FeedingTypeChanged" class="form-control">
+                <InputSelect id="feedingtype" @bind-Value="FeedingRecord.FeedingType" class="form-control">
                     @foreach (var option in Enum.GetValues(typeof(FeedingType)))
                     {
                         <option value="@option">@option</option>
@@ -59,6 +59,15 @@
                 <label for="quantity" class="form-label">Qunatity In Ounces</label>
                 <InputNumber id="quantity" @bind-Value="FeedingRecord.QuantityInOz" class="form-control" />
                 <ValidationMessage For="() => FeedingRecord.QuantityInOz" class="text-danger" />
+            </div>
+            <div class="mb-3" hidden="@HideBreastSelection">
+                <label for="breastSelection" class="form-label">Breast Selection</label>
+                <InputSelect id="breastSelection" @bind-Value="FeedingRecord.BreastSelection" class="form-control">
+                    @foreach (var option in Enum.GetValues(typeof(BreastSelection)))
+                    {
+                        <option value="@option">@option</option>
+                    }   
+                </InputSelect>
             </div>
             <div class="mb-3">
                 <label for="notes" class="form-label">Notes:</label> 
@@ -78,8 +87,8 @@
     [SupplyParameterFromQuery]
     private Guid BabyId { get; set; }
 
-    private bool HideQuantity { get; set; } = true;
-
+    private bool HideQuantity => !(FeedingRecord.FeedingType == FeedingType.Solid || FeedingRecord.FeedingType == FeedingType.Bottle);
+    private bool HideBreastSelection => FeedingRecord.FeedingType != FeedingType.Breast;
     private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
 
     protected override async Task OnInitializedAsync()
@@ -89,7 +98,15 @@
         FeedingRecord.SetTimeLocalFromUtc(timeZoneInfo);
 
         var userId = await UserIdentityProcessor.GetCurrentUserId();
-        FeedingRecord.UserId = Guid.Parse(userId);
+        if (userId == null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+        else
+        {
+            FeedingRecord.UserId = userId.Value;
+        }
+
     }
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
@@ -101,17 +118,5 @@
         context.FeedingRecords.Add(FeedingRecord);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/feedingrecords");
-    }
-
-    private void FeedingTypeChanged()
-    {
-        if (FeedingRecord.FeedingType == FeedingType.Bottle || FeedingRecord.FeedingType == FeedingType.Solid)
-        {
-            HideQuantity = false;
-        }
-        else
-        {
-            HideQuantity = true;
-        }
     }
 }

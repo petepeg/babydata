@@ -26,6 +26,7 @@ namespace BabyData.Data
         public FeedingType FeedingType { get; set; }
         public decimal QuantityInOz { get; set; }
         public string Notes { get; set; } = string.Empty;
+        public BreastSelection BreastSelection { get; set; }
 
         public TimeSpan ElapsedTime => EndTimeUtc - StartTimeUtc;
 
@@ -74,5 +75,13 @@ namespace BabyData.Data
         Breast = 1,
         Bottle = 2,
         Solid = 3,
+    }
+
+    public enum BreastSelection
+    {
+        None = 0,
+        Left = 1,
+        Right = 2,
+        Both = 3,
     }
 }
