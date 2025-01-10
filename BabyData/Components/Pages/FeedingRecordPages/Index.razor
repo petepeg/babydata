@@ -23,10 +23,10 @@
     else
     {
         <div class="d-flex justify-content-end">
-            <BabyData.Components.Pages.BabyPages.BabyComponent Babies="Babies" SelectedBabyId="SelectedBaby.Id" OnValueChanged="OnValueChanged" />
+            <BabyData.Components.Pages.BabyPages.BabyComponent Babies="Babies" SelectedBabyId="SelectedBaby?.Id" OnValueChanged="OnValueChanged" />
         </div>
 
-        <p><a href="feedingrecords/create?BabyId=@SelectedBaby.Id" class="btn btn-primary w-100">Create New</a></p>
+        <p><a href="feedingrecords/create?BabyId=@SelectedBaby?.Id" class="btn btn-primary w-100">Create New</a></p>
 
         <div>
             <InputSelect id="daysPreviousSelect" @bind-Value="NumberOfDays" class="form-select form-select-sm w-auto">
@@ -63,9 +63,16 @@
 </div>
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; } = default!;
     private ApplicationDbContext context = default!;
     private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-    private List<FeedingRecord> FeedingRecords;
+    private Baby? SelectedBaby { get; set; } = new();
+    private List<Baby> Babies { get; set; } = new();
+    private int NumberOfDays = 0;
+    private GridSort<FeedingRecord> SortByDate = GridSort<FeedingRecord>.ByAscending(x => x.StartTimeUtc);
+    private PaginationState paginationState = new() { ItemsPerPage = 15 };
+    private List<FeedingRecord> FeedingRecords = new ();
     private IQueryable<FeedingRecord>? FilteredFeedingRecords
     {
         get
@@ -85,21 +92,9 @@
         }
     }
 
-    GridSort<FeedingRecord> SortByDate = GridSort<FeedingRecord>
-    .ByAscending(x => x.StartTimeUtc);
-
-    PaginationState paginationState = new() { ItemsPerPage = 15 };
-
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; } = default!;
-
-    private Baby SelectedBaby { get; set; }
-    private List<Baby> Babies { get; set; } = new();
-    private int NumberOfDays = 0; 
-
     protected override async Task OnInitializedAsync()
     {
-        var userId = Guid.Parse(await UserIdentityProcessor.GetCurrentUserId());
+        var userId = await UserIdentityProcessor.GetCurrentUserId();
 
         context = await DbFactory.CreateDbContextAsync();
         FeedingRecords = (await context.FeedingRecords.Where(x => x.UserId == userId).ToListAsync());

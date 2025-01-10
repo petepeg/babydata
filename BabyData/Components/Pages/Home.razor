@@ -36,7 +36,7 @@ else
 }
 
 @code {
-    private string UserName { get; set; } = default!;
+    private string? UserName { get; set; } = default!;
     private ApplicationDbContext context = default!;
 
 
@@ -44,14 +44,16 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        UserName = await UserIdentityProcessor.GetCurrentUserName() ?? "";
-        var id = await UserIdentityProcessor.GetCurrentUserId();
-        var userId = String.IsNullOrEmpty(id) ? Guid.Empty : Guid.Parse(id);
+        UserName = await UserIdentityProcessor.GetCurrentUserName();
+        var userId = await UserIdentityProcessor.GetCurrentUserId();
 
         var today = DateTime.Now;
 
-        context = await DbFactory.CreateDbContextAsync();
-        FeedingRecords = await context.FeedingRecords.Where(x => x.UserId == userId && x.StartTimeUtc.Date == today.Date).ToListAsync();
-        var elaspsedTest = FeedingRecords.Select(x => x.ElapsedTime).ToList();
+        if (userId != null)
+        {
+            context = await DbFactory.CreateDbContextAsync();
+            FeedingRecords = await context.FeedingRecords.Where(x => x.UserId == userId && x.StartTimeUtc.Date == today.Date).ToListAsync();
+        }
+
     }
 }

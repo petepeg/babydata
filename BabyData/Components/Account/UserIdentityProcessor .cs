@@ -11,18 +11,20 @@ namespace BabyData.Components.Account
             this.authenticationStateAsync = authenticationStateAsync;
         }
 
-        public async Task<string?> GetCurrentUserId()
+        public async Task<Guid?> GetCurrentUserId()
         {
             var authstate = await this.authenticationStateAsync.GetAuthenticationStateAsync();
 
             if (authstate == null)
-            {
                 return null;
-            }
 
             var user = authstate.User;
+            var useridString = user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+            
+            if (string.IsNullOrEmpty(useridString))
+                return null;
 
-            return user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value;
+            return Guid.Parse(useridString);
         }
 
         public async Task<string?> GetCurrentUserName()

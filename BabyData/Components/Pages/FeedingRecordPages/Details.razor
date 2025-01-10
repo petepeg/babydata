@@ -56,7 +56,9 @@
         {
             NavigationManager.NavigateTo("notfound");
         }
-
-        feedingrecord.SetTimeLocalFromUtc(timeZoneInfo);
+        else
+        {
+            feedingrecord.SetTimeLocalFromUtc(timeZoneInfo);
+        }
     }
 }
