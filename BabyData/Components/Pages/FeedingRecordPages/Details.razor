@@ -26,7 +26,16 @@
             <dt class="col">Total Time</dt>
             <dd class="col">@feedingrecord.LocalDateTimes.ElapsedTime</dd>
             <dt class="col">FeedingType</dt>
-            <dd class="col">@feedingrecord.FeedingType</dd>
+            <dd class="col">@feedingrecord.FeedingType
+                @if (feedingrecord.FeedingType == FeedingType.Breast)
+                {
+                    @($",{feedingrecord.BreastSelection}")
+                }
+                @if (feedingrecord.FeedingType == FeedingType.Bottle || feedingrecord.FeedingType == FeedingType.Solid)
+                {
+                    @($"-{feedingrecord.QuantityInOz}oz")
+                }
+            </dd>
             <dt class="col">Notes</dt>
             <dd class="col">@feedingrecord.Notes</dd>
         </dl>

@@ -31,7 +31,16 @@
         </dl>
         <dl class="row">
             <dt class="col">FeedingType</dt>
-            <dd class="col">@feedingrecord.FeedingType</dd>
+            <dd class="col">@feedingrecord.FeedingType
+                @if (feedingrecord.FeedingType == FeedingType.Breast)
+                {
+                    @($",{feedingrecord.BreastSelection}")
+                }
+                @if (feedingrecord.FeedingType == FeedingType.Bottle || feedingrecord.FeedingType == FeedingType.Solid)
+                {
+                    @($"-{feedingrecord.QuantityInOz}oz")
+                }
+            </dd>
         </dl>
         <dl class="row">
             <dt class="col">Notes</dt>
