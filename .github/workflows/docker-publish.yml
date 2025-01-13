@@ -10,6 +10,6 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build and push
         run: |
-          docker login --username petep -- password ${{ secrets.GH_PAT }} ghcr.io
+          docker login --username petep --password ${{ secrets.GH_PAT }} ghcr.io
           docker build -f ./BabyData/Dockerfile . -t ghcr.io/petepeg/babydata:latest
           docker push ghcr.io/petepeg/babydata:latest
