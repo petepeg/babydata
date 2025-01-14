@@ -50,7 +50,7 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
     options.TokenLifespan = TimeSpan.FromHours(3));
 
 builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo(@"/home/app/.aspnet/DataProtection_Keys"));
+    .PersistKeysToFileSystem(new DirectoryInfo(@"/app/DataProtection_Keys"));
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
