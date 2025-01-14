@@ -1,0 +1,60 @@
+﻿@page "/sleeprecords/details"
+@using Microsoft.EntityFrameworkCore
+@using BabyData.Data
+@inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Sleep Record</h2>
+    <hr />
+    @if (SleepRecord is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col">Date</dt>
+            <dd class="col">@SleepRecord.LocalDateTimes.StartTimeLocal.ToShortDateString()</dd>
+            <dt class="col">StartTime</dt>
+            <dd class="col">@SleepRecord.LocalDateTimes.StartTimeString</dd>
+            <dt class="col">EndTime</dt>
+            <dd class="col">@SleepRecord.LocalDateTimes.EndTimeString</dd>
+            <dt class="col">Total Time</dt>
+            <dd class="col">@SleepRecord.LocalDateTimes.ElapsedTime</dd>
+            <dt class="col">Notes</dt>
+            <dd class="col">@SleepRecord.Notes</dd>
+        </dl>
+        <div>
+            <a href="@($"/sleeprecords/edit?id={SleepRecord.Id}")" class="btn btn-primary">Edit</a>
+            <a href="@($"sleeprecords/delete?id={SleepRecord.Id}")" class="btn btn-danger">Delete</a>
+        </div>
+        <div class="float-end">
+            <a href="@($"/sleeprecords")" class="btn btn-primary ">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private SleepRecord? SleepRecord;
+    private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        SleepRecord = await context.SleepRecords.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (SleepRecord is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+
+        SleepRecord?.SetTimeLocalFromUtc(timeZoneInfo);
+    }
+}

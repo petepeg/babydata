@@ -1,0 +1,70 @@
+﻿@page "/sleeprecords/delete"
+@using Microsoft.EntityFrameworkCore
+@using BabyData.Data
+@inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Delete</PageTitle>
+
+<h1>Delete</h1>
+
+<p>Are you sure you want to delete this?</p>
+<div>
+    <h2>Sleep Record</h2>
+    <hr />
+    @if (sleepRecord is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col">Date</dt>
+            <dd class="col">@sleepRecord.LocalDateTimes.StartTimeLocal.ToShortDateString()</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col">StartTime</dt>
+            <dd class="col">@sleepRecord.LocalDateTimes.StartTimeString</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col">EndTime</dt>
+            <dd class="col">@sleepRecord.LocalDateTimes.EndTimeString</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col">Notes</dt>
+            <dd class="col">@sleepRecord.Notes</dd>
+        </dl>
+        <EditForm method="post" Model="sleepRecord" OnValidSubmit="DeleteFeedingRecord" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(sleepRecord is null)">Delete</button> |
+            <a href="/feedingrecords" class="btn btn-warning">Back to List</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private SleepRecord? sleepRecord;
+    private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        sleepRecord = await context.SleepRecords.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (sleepRecord is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+        sleepRecord?.SetTimeLocalFromUtc(timeZoneInfo);
+
+    }
+
+    private async Task DeleteFeedingRecord()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.SleepRecords.Remove(sleepRecord!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/feedingrecords");
+    }
+}
