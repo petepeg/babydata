@@ -43,7 +43,7 @@ public class EmailSender(IOptions<AuthMessageSenderOptions> optionsAccessor,
         var client = new SendGridClient(apiKey);
         var msg = new SendGridMessage()
         {
-            From = new EmailAddress("peter.pegues@gmail.com", "Password Recovery"),
+            From = new EmailAddress("peter@pegues.party", "Account Services"),
             Subject = subject,
             PlainTextContent = message,
             HtmlContent = message
