@@ -1,0 +1,128 @@
+﻿@page "/sleeprecords/edit"
+@using Microsoft.EntityFrameworkCore
+@using BabyData.Data
+@inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+@rendermode @(new InteractiveServerRenderMode(false))
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Sleep Record</h2>
+<hr />
+@if (SleepRecord is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col">
+            <EditForm method="post" Model="SleepRecord" OnValidSubmit="UpdateRecord" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="FeedingRecord.Id" value="@SleepRecord.Id" />
+                <input type="hidden" name="FeedingRecord.UserId" value="@SleepRecord.UserId" />
+                <input type="hidden" name="FeedingRecord.BabyId" value="@SleepRecord.BabyId" />
+                <div class="mb-3">
+                    <label for="starttime" class="form-label">StartTime:</label>
+                    <InputDate Type="InputDateType.DateTimeLocal" id="starttime" @bind-Value="SleepRecord.LocalDateTimes.StartTimeLocal" class="form-control" />
+                    <ValidationMessage For="() => SleepRecord.LocalDateTimes.StartTimeLocal" class="text-danger" />
+                </div>
+                <div class="btn-group mb-2" role="group" aria-label="StartTime Adjustments">
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(-1)">-1min</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(-5)">-5min</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(-30)">-30min</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(1)">+1min</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(5)">+5min</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(30)">+30min</button>
+                </div>
+                <div class="mb-3">
+                    <label for="endtime" class="form-label">EndTime:</label>
+                    <InputDate Type="InputDateType.DateTimeLocal" id="endtime" @bind-Value="SleepRecord.LocalDateTimes.EndTimeLocal" class="form-control" />
+                    <ValidationMessage For="() => SleepRecord.LocalDateTimes.EndTimeLocal" class="text-danger" />
+                </div>
+                <div class="btn-group mb-2" role="group" aria-label="EndTime Adjustments">
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(-1)">-1min</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(-5)">-5min</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(-30)">-30min</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(1)">+1min</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(5)">+5min</button>
+                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(30)">+30min</button>
+                </div>
+                <div>
+                    <p>Total Time: @SleepRecord.LocalDateTimes.ElapsedTime.ToString()</p>
+                </div>
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Notes:</label>
+                    <InputTextArea id="notes" @bind-Value="SleepRecord.Notes" class="form-control" />
+                    <ValidationMessage For="() => SleepRecord.Notes" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/feedingrecords">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+
+    [SupplyParameterFromForm]
+    private SleepRecord? SleepRecord { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        SleepRecord ??= await context.SleepRecords.FirstOrDefaultAsync(m => m.Id == Id);
+        SleepRecord?.SetTimeLocalFromUtc(timeZoneInfo);
+
+
+        if (SleepRecord is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateRecord()
+    {
+        SleepRecord?.SetTimeUtcFromLocal(timeZoneInfo);
+
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(SleepRecord!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!RecordExists(SleepRecord!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/sleeprecords");
+    }
+
+    private bool RecordExists(Guid id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.SleepRecords.Any(e => e.Id == id);
+    }
+
+}
