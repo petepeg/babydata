@@ -1,0 +1,45 @@
+﻿@using BabyData.Data
+@using BabyData.ExtentionMethods
+
+@rendermode @(new InteractiveServerRenderMode(false))
+
+<div class="mb-3 px-3">
+    <label for="starttime" class="form-label">StartTime:</label>
+    <InputDate Type="InputDateType.DateTimeLocal" id="starttime" @bind-Value="UtcAndLocalDateTimeRecord.LocalDateTimes.StartTimeLocal" class="form-control" />
+    <ValidationMessage For="() => UtcAndLocalDateTimeRecord.LocalDateTimes.StartTimeLocal" class="text-danger" />
+</div>
+
+<div class="btn-group mb-2 w-100" role="group" aria-label="StartTime Adjustments">
+    @for (var i = 0; i < 6; i++)
+    {
+        // Without the reassignment in scope 'i'' will always equal the final iteration of the loop
+        int j = i;
+        <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="() => UtcAndLocalDateTimeRecord.LocalDateTimes.NudgeStartTime(int.Parse(nudgeArray[j]))">@(nudgeArray[j])m</button>
+    }
+</div>
+
+<div class="mb-3 px-3">
+    <label for="endtime" class="form-label">EndTime:</label>
+    <InputDate Type="InputDateType.DateTimeLocal" id="endtime" @bind-Value="UtcAndLocalDateTimeRecord.LocalDateTimes.EndTimeLocal" class="form-control" />
+    <ValidationMessage For="() => UtcAndLocalDateTimeRecord.EndTimeUtc" class="text-danger" />
+</div>
+
+<div class="btn-group mb-2 w-100" role="group" aria-label="EndTime Adjustments">
+    @for (var i = 0; i < 6; i++)
+    {
+        int j = i;
+        <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="() => UtcAndLocalDateTimeRecord.LocalDateTimes.NudgeEndTime(int.Parse(nudgeArray[j]))">@(nudgeArray[j])m</button>
+    }
+</div>
+<div>
+    <p>Total Time: @UtcAndLocalDateTimeRecord.LocalDateTimes.ElapsedTime.ToHumanReadable()</p>
+</div>
+
+@code {
+    [Parameter] public required UtcAndLocalDateTimeRecord UtcAndLocalDateTimeRecord { get; set; }
+
+    [Parameter] public EventCallback<Baby> OnValueChanged { get; set; }
+
+    private string[] nudgeArray = {"-30", "-5", "-1", "+1", "+5", "+30"};
+
+}
