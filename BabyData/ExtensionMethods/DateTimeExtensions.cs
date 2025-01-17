@@ -13,8 +13,19 @@
         {
             var totalMinuets = ts.TotalMinutes;
             int hours = (int)(totalMinuets / 60);
-            int min = (int)(totalMinuets % 60);
-            return hours > 0 ? $"{hours} hours and {min} min" : $"{min} min";
+            int mins = (int)(totalMinuets % 60);
+
+            
+            if( hours == 0 )
+            {
+                return $"{mins} mins";
+            }
+            if (hours != 0 && mins == 0)
+            {
+                return $"{hours} hours";
+            }
+
+            return  $"{hours} hours and {mins} min";
 
         }
     }
