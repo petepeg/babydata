@@ -1,5 +1,6 @@
 ﻿@page "/feedingrecords"
 @using BabyData.Components.Account
+@using BabyData.ExtentionMethods
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using BabyData.Data
@@ -52,7 +53,7 @@
                 }
                 else
                 {
-                    <p class="text-center my-0 text-nowrap">@context.ElapsedTime.TotalMinutes min</p>
+                    <p class="text-center my-0 text-nowrap">@context.ElapsedTime.ToHumanReadable()</p>
                 }
             </TemplateColumn>
         </QuickGrid>
