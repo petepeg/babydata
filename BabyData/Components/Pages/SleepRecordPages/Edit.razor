@@ -25,35 +25,7 @@ else
                 <input type="hidden" name="FeedingRecord.Id" value="@SleepRecord.Id" />
                 <input type="hidden" name="FeedingRecord.UserId" value="@SleepRecord.UserId" />
                 <input type="hidden" name="FeedingRecord.BabyId" value="@SleepRecord.BabyId" />
-                <div class="mb-3">
-                    <label for="starttime" class="form-label">StartTime:</label>
-                    <InputDate Type="InputDateType.DateTimeLocal" id="starttime" @bind-Value="SleepRecord.LocalDateTimes.StartTimeLocal" class="form-control" />
-                    <ValidationMessage For="() => SleepRecord.LocalDateTimes.StartTimeLocal" class="text-danger" />
-                </div>
-                <div class="btn-group mb-2" role="group" aria-label="StartTime Adjustments">
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(-1)">-1min</button>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(-5)">-5min</button>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(-30)">-30min</button>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(1)">+1min</button>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(5)">+5min</button>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeStartTime(30)">+30min</button>
-                </div>
-                <div class="mb-3">
-                    <label for="endtime" class="form-label">EndTime:</label>
-                    <InputDate Type="InputDateType.DateTimeLocal" id="endtime" @bind-Value="SleepRecord.LocalDateTimes.EndTimeLocal" class="form-control" />
-                    <ValidationMessage For="() => SleepRecord.LocalDateTimes.EndTimeLocal" class="text-danger" />
-                </div>
-                <div class="btn-group mb-2" role="group" aria-label="EndTime Adjustments">
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(-1)">-1min</button>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(-5)">-5min</button>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(-30)">-30min</button>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(1)">+1min</button>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(5)">+5min</button>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="() => SleepRecord.LocalDateTimes.NudgeEndTime(30)">+30min</button>
-                </div>
-                <div>
-                    <p>Total Time: @SleepRecord.LocalDateTimes.ElapsedTime.ToString()</p>
-                </div>
+                <TimeAdjustComponent UtcAndLocalDateTimeRecord="SleepRecord" />
                 <div class="mb-3">
                     <label for="notes" class="form-label">Notes:</label>
                     <InputTextArea id="notes" @bind-Value="SleepRecord.Notes" class="form-control" />
