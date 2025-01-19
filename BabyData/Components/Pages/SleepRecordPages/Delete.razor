@@ -34,8 +34,8 @@
             <dd class="col">@sleepRecord.Notes</dd>
         </dl>
         <EditForm method="post" Model="sleepRecord" OnValidSubmit="DeleteFeedingRecord" FormName="delete" Enhance>
-            <button type="submit" class="btn btn-danger" disabled="@(sleepRecord is null)">Delete</button> |
-            <a href="/feedingrecords" class="btn btn-warning">Back to List</a>
+            <button type="submit" class="btn btn-outline-danger" disabled="@(sleepRecord is null)">Delete</button> |
+            <a href="/feedingrecords" class="btn btn-outline-primary">Back to List</a>
         </EditForm>
     }
 </div>

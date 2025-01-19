@@ -26,7 +26,7 @@
             <BabyData.Components.Pages.BabyPages.BabyComponent Babies="Babies" SelectedBabyId="SelectedBaby?.Id" OnValueChanged="OnValueChanged" />
         </div>
 
-        <p><a href="feedingrecords/create?BabyId=@SelectedBaby?.Id" class="btn btn-primary w-100">Create New</a></p>
+        <p><a href="feedingrecords/create?BabyId=@SelectedBaby?.Id" class="btn btn-outline-primary w-100">Create New</a></p>
 
         <div>
             <InputSelect id="daysPreviousSelect" @bind-Value="NumberOfDays" class="form-select form-select-sm w-auto">

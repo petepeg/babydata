@@ -47,8 +47,8 @@
             <dd class="col">@feedingrecord.Notes</dd>
         </dl>
         <EditForm method="post" Model="feedingrecord" OnValidSubmit="DeleteFeedingRecord" FormName="delete" Enhance>
-            <button type="submit" class="btn btn-danger" disabled="@(feedingrecord is null)">Delete</button> |
-            <a href="/feedingrecords" class="btn btn-warning">Back to List</a>
+            <button type="submit" class="btn btn-outline-danger" disabled="@(feedingrecord is null)">Delete</button> |
+            <a href="/feedingrecords" class="btn btn-outline-primary">Back to List</a>
         </EditForm>
     }
 </div>

@@ -55,15 +55,12 @@ else
                     <InputTextArea id="notes" @bind-Value="FeedingRecord.Notes" class="form-control" />
                     <ValidationMessage For="() => FeedingRecord.Notes" class="text-danger" />
                 </div>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" class="btn btn-outline-primary">Save</button>
+                <a class="btn btn-outline-primary float-end" href="/feedingrecords">Back to List</a>
             </EditForm>
         </div>
     </div>
 }
-
-<div>
-    <a href="/feedingrecords">Back to List</a>
-</div>
 
 @code {
     [SupplyParameterFromQuery]
