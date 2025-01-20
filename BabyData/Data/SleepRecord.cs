@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BabyData.Data
 {
-    public class SleepRecord : UtcAndLocalDateTimeRecord
+    public class SleepRecord : UtcAndLocalDateTimeRecord, IHaveBabyData
     {
         [Key]
         public Guid Id { get; set; }

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BabyData.Data
 {
-    public class FeedingRecord : UtcAndLocalDateTimeRecord
+    public class FeedingRecord : UtcAndLocalDateTimeRecord, IHaveBabyData
     {
         [Key]
         public Guid Id { get; set; }
