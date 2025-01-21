@@ -1,0 +1,123 @@
+﻿@page "/diaperrecords/create"
+@using BabyData.Components.Account
+@using BlazorColorPicker
+@using Microsoft.EntityFrameworkCore
+@using BabyData.Data
+@inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject IUserIdentityProcessor UserIdentityProcessor
+@rendermode @(new InteractiveServerRenderMode(false))
+
+<PageTitle>Create</PageTitle>
+
+<h3>New Diaper Record</h3>
+<hr />
+<div class="d-flex row">
+    <div class="d-flex col-4 w-100">
+        <EditForm method="post" Model="DiaperRecord" OnValidSubmit="AddRecord" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/> 
+
+            <TimeAdjustComponent UtcAndLocalDateTimeRecord="DiaperRecord" />
+
+            <button class="btn btn-primary" type="button" @onclick="OpenModal">
+                <div style="background-color:@DiaperRecord.ColorCode" class="buttonColor"></div> Select a Color
+            </button>
+
+            <ColorPicker Title="Poop Color" IsOpened="isOpened" Closed="ClosedEvent" MyColor="@DiaperRecord.ColorCode"></ColorPicker>
+
+            <div class="mb-3">
+                <label for="weight" class="form-label">Qunatity In Ounces</label>
+                <InputNumber id="weight" @bind-Value="DiaperRecord.Weight" class="form-control" />
+                <ValidationMessage For="() => DiaperRecord.Weight" class="text-danger" />
+            </div>
+
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes:</label> 
+                <InputTextArea id="notes" @bind-Value="DiaperRecord.Notes" class="form-control" /> 
+                <ValidationMessage For="() => DiaperRecord.Notes" class="text-danger" /> 
+            </div>
+
+            <div class="mb-3">
+                <InputText id="name" @bind-Value="tagInput" class="form-control" />
+                <button type="button" @onclick="AddTag">Add</button>
+
+                @foreach (var tag in NewTags)
+                {
+                    <p>@tag.Title</p>
+                }
+            </div>
+
+            <a class="btn btn-outline-secondary" href="/diaperrecords">Back to List</a>
+            <button type="submit" class="btn btn-outline-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm] private DiaperRecord DiaperRecord { get; set; } = default!;
+    [SupplyParameterFromQuery] private Guid BabyId { get; set; }
+
+    private List<Tag> NewTags { get; set; } = new();
+    private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    private ApplicationDbContext context = default!;
+
+
+    bool isOpened = false;
+    string tagInput = "";
+
+    void OpenModal()
+    {
+        isOpened = true;
+    }
+
+    void ClosedEvent(string value)
+    {
+        DiaperRecord.ColorCode = value;
+        isOpened = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        DiaperRecord ??= new DiaperRecord();
+        DiaperRecord.BabyId = BabyId;
+        DiaperRecord.SetTimeLocalFromUtc(timeZoneInfo);
+
+        var userId = await UserIdentityProcessor.GetCurrentUserId();
+        if (userId == null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+        else
+        {
+            DiaperRecord.UserId = userId.Value;
+        }
+
+    }
+
+    async Task AddTag()
+    {
+        context = await DbFactory.CreateDbContextAsync();
+
+        var tag = await context.Tags.SingleOrDefaultAsync(x => x.Title == tagInput) ?? new Tag { Title = tagInput };
+        NewTags.Add(tag);
+
+        var diaperTag = new DiaperTag { Tag = tag, DiaperRecord = DiaperRecord };
+        DiaperRecord.Tags.Add(diaperTag);
+    }
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddRecord()
+    {
+        DiaperRecord.SetTimeUtcFromLocal(timeZoneInfo);
+
+        using var context = DbFactory.CreateDbContext();
+
+        context.Tags.UpdateRange(NewTags);
+        context.DiaperRecords.Add(DiaperRecord);
+
+        await context.SaveChangesAsync();
+
+        NavigationManager.NavigateTo("/diaperrecords");
+    }
+}

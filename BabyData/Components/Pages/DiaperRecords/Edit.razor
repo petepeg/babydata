@@ -1,0 +1,100 @@
+﻿@page "/diaperrecords/edit"
+@using Microsoft.EntityFrameworkCore
+@using BabyData.Data
+@inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+@rendermode @(new InteractiveServerRenderMode(false))
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Diaper Record</h2>
+<hr />
+@if (DiaperRecord is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col">
+            <EditForm method="post" Model="DiaperRecord" OnValidSubmit="UpdateRecord" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="FeedingRecord.Id" value="@DiaperRecord.Id" />
+                <input type="hidden" name="FeedingRecord.UserId" value="@DiaperRecord.UserId" />
+                <input type="hidden" name="FeedingRecord.BabyId" value="@DiaperRecord.BabyId" />
+                <TimeAdjustComponent UtcAndLocalDateTimeRecord="DiaperRecord" />
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Notes:</label>
+                    <InputTextArea id="notes" @bind-Value="DiaperRecord.Notes" class="form-control" />
+                    <ValidationMessage For="() => DiaperRecord.Notes" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-outline-primary">Save</button>
+                <a class="btn btn-outline-primary float-end" href="/feedingrecords">Back to List</a>
+
+            </EditForm>
+        </div>
+    </div>
+}
+
+
+
+@code {
+    [SupplyParameterFromQuery]
+    private Guid Id { get; set; }
+
+    private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+
+    [SupplyParameterFromForm]
+    private DiaperRecord? DiaperRecord { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        DiaperRecord ??= await context.DiaperRecords.FirstOrDefaultAsync(m => m.Id == Id);
+        DiaperRecord?.SetTimeLocalFromUtc(timeZoneInfo);
+
+
+        if (DiaperRecord is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateRecord()
+    {
+        DiaperRecord?.SetTimeUtcFromLocal(timeZoneInfo);
+
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(DiaperRecord!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!RecordExists(DiaperRecord!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/diaperrecords");
+    }
+
+    private bool RecordExists(Guid id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.DiaperRecords.Any(e => e.Id == id);
+    }
+
+}
