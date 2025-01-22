@@ -1,11 +1,15 @@
 ﻿@page "/diaperrecords/create"
+
 @using BabyData.Components.Account
 @using BlazorColorPicker
 @using Microsoft.EntityFrameworkCore
 @using BabyData.Data
+
 @inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 @inject IUserIdentityProcessor UserIdentityProcessor
+@inject IToastService toastService
+
 @rendermode @(new InteractiveServerRenderMode(false))
 
 <PageTitle>Create</PageTitle>
@@ -24,7 +28,7 @@
                 <div style="background-color:@DiaperRecord.ColorCode" class="buttonColor"></div> Select a Color
             </button>
 
-            <ColorPicker Title="Poop Color" IsOpened="isOpened" Closed="ClosedEvent" MyColor="@DiaperRecord.ColorCode"></ColorPicker>
+            <ColorPicker Title="Poop Color" IsOpened="IsOpened" Closed="ClosedEvent" MyColor="@DiaperRecord.ColorCode"></ColorPicker>
 
             <div class="mb-3">
                 <label for="weight" class="form-label">Qunatity In Ounces</label>
@@ -39,8 +43,8 @@
             </div>
 
             <div class="mb-3">
-                <InputText id="name" @bind-Value="tagInput" class="form-control" />
-                <button type="button" @onclick="AddTag">Add</button>
+                <InputText id="name" @bind-Value="TagInput" class="form-control" />
+                <button type="button" class="btn btn-sm" @onclick="AddTag">Add</button>
 
                 @foreach (var tag in NewTags)
                 {
@@ -59,29 +63,29 @@
     [SupplyParameterFromQuery] private Guid BabyId { get; set; }
 
     private List<Tag> NewTags { get; set; } = new();
-    private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-    private ApplicationDbContext context = default!;
+    private TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    private ApplicationDbContext Context = default!;
 
 
-    bool isOpened = false;
-    string tagInput = "";
+    bool IsOpened = false;
+    string TagInput = "";
 
     void OpenModal()
     {
-        isOpened = true;
+        IsOpened = true;
     }
 
     void ClosedEvent(string value)
     {
         DiaperRecord.ColorCode = value;
-        isOpened = false;
+        IsOpened = false;
     }
 
     protected override async Task OnInitializedAsync()
     {
         DiaperRecord ??= new DiaperRecord();
         DiaperRecord.BabyId = BabyId;
-        DiaperRecord.SetTimeLocalFromUtc(timeZoneInfo);
+        DiaperRecord.SetTimeLocalFromUtc(TimeZoneInfo);
 
         var userId = await UserIdentityProcessor.GetCurrentUserId();
         if (userId == null)
@@ -97,11 +101,19 @@
 
     async Task AddTag()
     {
-        context = await DbFactory.CreateDbContextAsync();
+        if (string.IsNullOrEmpty(TagInput))
+            return;
+        var tagInput = TagInput;
+        TagInput = "";
+        Context = await DbFactory.CreateDbContextAsync();
 
-        var tag = await context.Tags.SingleOrDefaultAsync(x => x.Title == tagInput) ?? new Tag { Title = tagInput };
+        var tag = await Context.Tags.SingleOrDefaultAsync(x => x.Title == TagInput) ?? new Tag { Title = tagInput };
+        if (NewTags.Any(x => x.Title == tagInput))
+        {
+            toastService.ShowError("Tag already added");
+            return;
+        }
         NewTags.Add(tag);
-
         var diaperTag = new DiaperTag { Tag = tag, DiaperRecord = DiaperRecord };
         DiaperRecord.Tags.Add(diaperTag);
     }
@@ -109,7 +121,7 @@
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddRecord()
     {
-        DiaperRecord.SetTimeUtcFromLocal(timeZoneInfo);
+        DiaperRecord.SetTimeUtcFromLocal(TimeZoneInfo);
 
         using var context = DbFactory.CreateDbContext();
 
