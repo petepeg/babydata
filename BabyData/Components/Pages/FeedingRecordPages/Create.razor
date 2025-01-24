@@ -71,16 +71,8 @@
         FeedingRecord ??= new FeedingRecord();
         FeedingRecord.BabyId = BabyId;
         FeedingRecord.SetTimeLocalFromUtc(timeZoneInfo);
+        FeedingRecord.UserId = await UserIdentityProcessor.GetCurrentUserId();
 
-        var userId = await UserIdentityProcessor.GetCurrentUserId();
-        if (userId == null)
-        {
-            NavigationManager.NavigateTo("notfound");
-        }
-        else
-        {
-            FeedingRecord.UserId = userId.Value;
-        }
 
     }
 

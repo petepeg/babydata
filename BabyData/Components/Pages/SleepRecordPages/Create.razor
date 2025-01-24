@@ -42,16 +42,7 @@
         SleepRecord ??= new SleepRecord();
         SleepRecord.BabyId = BabyId;
         SleepRecord.SetTimeLocalFromUtc(timeZoneInfo);
-
-        var userId = await UserIdentityProcessor.GetCurrentUserId();
-        if (userId == null)
-        {
-            NavigationManager.NavigateTo("notfound");
-        }
-        else
-        {
-            SleepRecord.UserId = userId.Value;
-        }
+        SleepRecord.UserId = await UserIdentityProcessor.GetCurrentUserId();
 
     }
 

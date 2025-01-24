@@ -87,16 +87,7 @@
         DiaperRecord ??= new DiaperRecord();
         DiaperRecord.BabyId = BabyId;
         DiaperRecord.SetTimeLocalFromUtc(TimeZoneInfo);
-
-        var userId = await UserIdentityProcessor.GetCurrentUserId();
-        if (userId == null)
-        {
-            NavigationManager.NavigateTo("notfound");
-        }
-        else
-        {
-            DiaperRecord.UserId = userId.Value;
-        }
+        DiaperRecord.UserId = await UserIdentityProcessor.GetCurrentUserId();
 
     }
 
