@@ -1,13 +1,19 @@
 ﻿@page "/diaperrecords"
+
 @using BabyData.Components.Account
 @using BabyData.ExtentionMethods
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using BabyData.Data
+@using BlazorColorPicker
+@using System.Globalization
+
 @implements IAsyncDisposable
+
 @inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager Navigation
 @inject IUserIdentityProcessor UserIdentityProcessor
+
 @attribute [StreamRendering]
 
 @* prevent double render, consider persisiting state https://jonhilton.net/persist-state-between-renders-net8/#:%7E:text=Chances%20are%20it%27s%20down%20to,show%20something%20nice%20and%20quickly *@
@@ -47,15 +53,15 @@
             </TemplateColumn>
 
             <TemplateColumn Title="Color">
-                <p class="ms-2 mb-0 text-nowrap">@context.ColorCode</p>
+                <p style="background-color:@context.ColorCode">💩</p>
             </TemplateColumn>
 
             <TemplateColumn Title="Weight">
-                <p class="ms-2 mb-0 text-nowrap">@context.Weight</p>
+                <p class="ms-2 mb-0 text-nowrap">@(context.Weight)oz</p>
             </TemplateColumn>
 
             <TemplateColumn Title="Tags">
-                <p class="ms-2 mb-0 text-nowrap">@string.Join(",",context.Tags.Select(x => x.Tag.Title))</p>
+                <p class="ms-2 mb-0 text-nowrap">@string.Join(",", context.Tags.Select(x => TextInfo.ToTitleCase(x.Tag.Title) ))</p>
             </TemplateColumn>
         </QuickGrid>
 
@@ -74,6 +80,8 @@
     private GridSort<DiaperRecord> SortByDate = GridSort<DiaperRecord>.ByAscending(x => x.StartTimeUtc);
     private PaginationState PaginationState = new() { ItemsPerPage = 15 };
     private List<DiaperRecord> DiaperRecords = new();
+    private TextInfo TextInfo = new CultureInfo("en-US", false).TextInfo;
+
     private IQueryable<DiaperRecord>? FilteredDiaperRecords
     {
         get

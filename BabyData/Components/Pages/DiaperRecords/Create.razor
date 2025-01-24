@@ -4,6 +4,7 @@
 @using BlazorColorPicker
 @using Microsoft.EntityFrameworkCore
 @using BabyData.Data
+@using System.Globalization
 
 @inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
@@ -48,7 +49,7 @@
 
                 @foreach (var tag in NewTags)
                 {
-                    <p>@tag.Title</p>
+                    <p>@TextInfo.ToTitleCase(tag.Title)</p>
                 }
             </div>
 
@@ -65,7 +66,7 @@
     private List<Tag> NewTags { get; set; } = new();
     private TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
     private ApplicationDbContext Context = default!;
-
+    private TextInfo TextInfo = new CultureInfo("en-US", false).TextInfo;
 
     bool IsOpened = false;
     string TagInput = "";
@@ -103,7 +104,7 @@
     {
         if (string.IsNullOrEmpty(TagInput))
             return;
-        var tagInput = TagInput;
+        var tagInput = TagInput.ToLower();
         TagInput = "";
         Context = await DbFactory.CreateDbContextAsync();
 
