@@ -19,8 +19,9 @@ namespace BabyData.Migrations
                     UserId = table.Column<Guid>(type: "CHAR(16) CHARACTER SET OCTETS", nullable: false),
                     BabyId = table.Column<Guid>(type: "CHAR(16) CHARACTER SET OCTETS", nullable: false),
                     ColorCode = table.Column<string>(type: "BLOB SUB_TYPE TEXT", nullable: false),
+                    Pee = table.Column<bool>(type: "BOOLEAN", nullable: false),
+                    Poop = table.Column<bool>(type: "BOOLEAN", nullable: false),
                     Notes = table.Column<string>(type: "BLOB SUB_TYPE TEXT", nullable: false),
-                    Weight = table.Column<decimal>(type: "DECIMAL(18,2)", nullable: false),
                     StartTimeUtc = table.Column<DateTime>(type: "TIMESTAMP", nullable: false),
                     EndTimeUtc = table.Column<DateTime>(type: "TIMESTAMP", nullable: false)
                 },

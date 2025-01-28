@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BabyData.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250120013635_AddDiaperRecordAndTags")]
+    [Migration("20250128142125_AddDiaperRecordAndTags")]
     partial class AddDiaperRecordAndTags
     {
         /// <inheritdoc />
@@ -126,14 +126,17 @@ namespace BabyData.Migrations
                         .IsRequired()
                         .HasColumnType("BLOB SUB_TYPE TEXT");
 
+                    b.Property<bool>("Pee")
+                        .HasColumnType("BOOLEAN");
+
+                    b.Property<bool>("Poop")
+                        .HasColumnType("BOOLEAN");
+
                     b.Property<DateTime>("StartTimeUtc")
                         .HasColumnType("TIMESTAMP");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("CHAR(16) CHARACTER SET OCTETS");
-
-                    b.Property<decimal>("Weight")
-                        .HasColumnType("DECIMAL(18,2)");
 
                     b.HasKey("Id");
 

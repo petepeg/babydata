@@ -19,7 +19,7 @@
 @* prevent double render, consider persisiting state https://jonhilton.net/persist-state-between-renders-net8/#:%7E:text=Chances%20are%20it%27s%20down%20to,show%20something%20nice%20and%20quickly *@
 @rendermode @(new InteractiveServerRenderMode(false)) 
 
-<div>
+<div class="w-100">
     <PageTitle>Diaper Records</PageTitle>
     <h1 class="text-center">Diaper Records</h1>
 
@@ -52,16 +52,20 @@
                 <p class="ms-2 mb-0 text-nowrap">@context.LocalDateTimes.StartTimeString</p>
             </TemplateColumn>
 
-            <TemplateColumn Title="Color">
-                <p style="background-color:@context.ColorCode">💩</p>
+            <TemplateColumn Title="">
+                @if (context.Poop)
+                {
+                    <span style="background-color:@context.ColorCode">💩</span>
+                }
+                @if (context.Pee)
+                {
+                    <span>💦</span>
+
+                }
             </TemplateColumn>
 
-            <TemplateColumn Title="Weight">
-                <p class="ms-2 mb-0 text-nowrap">@(context.Weight)oz</p>
-            </TemplateColumn>
-
-            <TemplateColumn Title="Tags">
-                <p class="ms-2 mb-0 text-nowrap">@string.Join(",", context.Tags.Select(x => TextInfo.ToTitleCase(x.Tag.Title) ))</p>
+            <TemplateColumn Title="">
+                <p class="ms-2 mb-0">@string.Join(",", context.Tags.Select(x => TextInfo.ToTitleCase(x.Tag.Title) ))</p>
             </TemplateColumn>
         </QuickGrid>
 

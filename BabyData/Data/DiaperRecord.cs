@@ -14,9 +14,10 @@ namespace BabyData.Data
         public Guid UserId { get; set; }
         [Required]
         public Guid BabyId { get; set; }
-        public string ColorCode { get; set; } = "#F1F7E9";
+        public string ColorCode { get; set; } = "#783f04";
+        public bool Pee { get; set; }
+        public bool Poop { get; set; }
         public string Notes { get; set; } = "";
-        public decimal Weight { get; set; }
         public ICollection<DiaperTag> Tags { get; }
     }
 }

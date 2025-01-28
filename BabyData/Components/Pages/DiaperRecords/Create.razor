@@ -23,18 +23,26 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert"/> 
 
-            <TimeAdjustComponent UtcAndLocalDateTimeRecord="DiaperRecord" />
-
-            <button class="btn btn-primary" type="button" @onclick="OpenModal">
-                <div style="background-color:@DiaperRecord.ColorCode" class="buttonColor"></div> Select a Color
-            </button>
-
-            <ColorPicker Title="Poop Color" IsOpened="IsOpened" Closed="ClosedEvent" MyColor="@DiaperRecord.ColorCode"></ColorPicker>
+            <TimeAdjustComponent UtcAndLocalDateTimeRecord="DiaperRecord" HideAdjusters=true HideElapsedTime=true HideEndTime=true/>
 
             <div class="mb-3">
-                <label for="weight" class="form-label">Qunatity In Ounces</label>
-                <InputNumber id="weight" @bind-Value="DiaperRecord.Weight" class="form-control" />
-                <ValidationMessage For="() => DiaperRecord.Weight" class="text-danger" />
+                <InputCheckbox @bind-Value="DiaperRecord.Pee" class="btn-check" id="btn-pee"></InputCheckbox>
+                <label class="btn btn-primary w-100" for="btn-pee">@PeeText</label>
+            </div>
+
+            <div class="mb-3 row g-3">
+                <div class="col-auto flex-grow-1">
+                    <InputCheckbox @bind-Value="DiaperRecord.Poop" class="btn-check" id="btn-poop"></InputCheckbox>
+                    <label class="btn btn-primary w-100" for="btn-poop">@PoopText</label>
+                </div>
+
+                <div class="col-auto" hidden="@HidePoopColor">
+                    <button class="btn btn-primary" type="button" @onclick="OpenModal">
+                        <div style="background-color:@DiaperRecord.ColorCode" class="buttonColor"></div> Select a Color
+                    </button>
+                    <ColorPicker Title="Poop Color" IsOpened="IsOpened" Closed="ClosedEvent" MyColor="@DiaperRecord.ColorCode"></ColorPicker>
+                </div>
+
             </div>
 
             <div class="mb-3">
@@ -43,13 +51,23 @@
                 <ValidationMessage For="() => DiaperRecord.Notes" class="text-danger" /> 
             </div>
 
-            <div class="mb-3">
-                <InputText id="name" @bind-Value="TagInput" class="form-control" />
-                <button type="button" class="btn btn-sm" @onclick="AddTag">Add</button>
-
-                @foreach (var tag in NewTags)
+            <div class="mb-3 row g-3">
+                <label class="form-label">Tags:</label>
+                <div class="col-auto">
+                    <InputText id="tag" @bind-Value="TagInput" class="p-1 form-control-sm" />
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-sm" @onclick="AddTag">Add</button>
+                </div>
+            </div>
+            <div class="mb-3 row">
+                @foreach (var diaperTag in DiaperRecord.Tags)
                 {
-                    <p>@TextInfo.ToTitleCase(tag.Title)</p>
+                    DiaperTag tag = diaperTag;
+                    <div class="col-auto">
+                        <span>@TextInfo.ToTitleCase(diaperTag.Tag.Title)</span>
+                        <button type="button" class="btn btn-close" @onclick="() => RemoveTag(diaperTag)"></button>
+                    </div>
                 }
             </div>
 
@@ -63,11 +81,12 @@
     [SupplyParameterFromForm] private DiaperRecord DiaperRecord { get; set; } = default!;
     [SupplyParameterFromQuery] private Guid BabyId { get; set; }
 
-    private List<Tag> NewTags { get; set; } = new();
     private TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
     private ApplicationDbContext Context = default!;
     private TextInfo TextInfo = new CultureInfo("en-US", false).TextInfo;
-
+    private bool HidePoopColor => !DiaperRecord.Poop;
+    private string PeeText => DiaperRecord.Pee ? "Pee" : "Pee?";
+    private string PoopText => DiaperRecord.Poop ? "Poop" : "Poop?";
     bool IsOpened = false;
     string TagInput = "";
 
@@ -95,19 +114,25 @@
     {
         if (string.IsNullOrEmpty(TagInput))
             return;
-        var tagInput = TagInput.ToLower();
-        TagInput = "";
-        Context = await DbFactory.CreateDbContextAsync();
 
-        var tag = await Context.Tags.SingleOrDefaultAsync(x => x.Title == TagInput) ?? new Tag { Title = tagInput };
-        if (NewTags.Any(x => x.Title == tagInput))
+        var tagInputSanitized = TagInput.ToLower();
+        TagInput = "";
+
+        Context = await DbFactory.CreateDbContextAsync();
+        var tag = await Context.Tags.SingleOrDefaultAsync(x => x.Title == tagInputSanitized) ?? new Tag { Title = tagInputSanitized };
+        if (DiaperRecord.Tags.Any(x => x.Tag.Title == tagInputSanitized))
         {
             toastService.ShowError("Tag already added");
             return;
         }
-        NewTags.Add(tag);
+
         var diaperTag = new DiaperTag { Tag = tag, DiaperRecord = DiaperRecord };
         DiaperRecord.Tags.Add(diaperTag);
+    }
+
+    void RemoveTag(DiaperTag diaperTag)
+    {
+        DiaperRecord.Tags.Remove(diaperTag);
     }
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
@@ -117,7 +142,7 @@
 
         using var context = DbFactory.CreateDbContext();
 
-        context.Tags.UpdateRange(NewTags);
+        context.Tags.UpdateRange(DiaperRecord.Tags.Select(x => x.Tag));
         context.DiaperRecords.Add(DiaperRecord);
 
         await context.SaveChangesAsync();
