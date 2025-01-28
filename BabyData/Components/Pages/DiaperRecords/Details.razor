@@ -2,10 +2,11 @@
 @using BabyData.ExtentionMethods
 @using Microsoft.EntityFrameworkCore
 @using BabyData.Data
+@using System.Globalization
 @inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Details</PageTitle>
+<PageTitle>Diaper Details</PageTitle>
 
 <h1>Details</h1>
 
@@ -17,23 +18,47 @@
         <p><em>Loading...</em></p>
     }
     else {
-        <dl class="row">
-            <dt class="col">Date</dt>
-            <dd class="col">@DiaperRecord.LocalDateTimes.StartTimeLocal.ToShortDateString()</dd>
-            <dt class="col">StartTime</dt>
-            <dd class="col">@DiaperRecord.LocalDateTimes.StartTimeString</dd>
-            <dt class="col">EndTime</dt>
-            <dd class="col">@DiaperRecord.LocalDateTimes.EndTimeString</dd>
-            <dt class="col">Total Time</dt>
-            <dd class="col">@DiaperRecord.LocalDateTimes.ElapsedTime.ToHumanReadable()</dd>
-            <dt class="col">Notes</dt>
-            <dd class="col">@DiaperRecord.Notes</dd>
+        <dl>
+            <div class="row">
+                <dt class="col pe-1">Date:</dt>
+                <dd class="col px-0">@DiaperRecord.LocalDateTimes.StartTimeLocal.ToShortDateString()</dd>
+            </div>
+
+            <div class="row">
+                <dt class="col pe-1">Time:</dt>
+                <dd class="col px-0">@DiaperRecord.LocalDateTimes.StartTimeString</dd>
+            </div>
+
+            <div class="row">
+                <dt class="col pe-1">Poop:</dt>
+                <dd class="col px-0">@(DiaperRecord.Poop ? "Yes" : "No")</dd>
+            </div>
+            @if(DiaperRecord.Poop)
+            {
+                <div class="row">
+                    <dt class="col pe-1">Poop Color:</dt>
+                    <dd class="col px-0"><span style="background-color:@DiaperRecord.ColorCode">💩</span></dd>
+                </div>
+
+            }
+            <div class="row">
+                <dt class="col pe-1">Pee:</dt>
+                <dd class="col px-0">@(DiaperRecord.Pee ? "Yes" : "No")</dd>
+            </div>
+
+            <dt>Notes:</dt>
+            <dd>@DiaperRecord.Notes</dd>
+
+            <dt>Tags:</dt>
+            <dd>
+                <p class="ms-2 mb-0">@string.Join(", ", DiaperRecord.Tags.Select(x => TextInfo.ToTitleCase(x.Tag.Title)))</p>
+            </dd>
         </dl>
         <div>
             <a href="@($"/diaperrecords/edit?id={DiaperRecord.Id}")" class="btn btn-outline-primary">Edit</a>
             <a href="@($"diaperrecords/delete?id={DiaperRecord.Id}")" class="btn btn-outline-danger">Delete</a>
         </div>
-        <div class="float-end">
+        <div class="float-end mt-3">
             <a href="@($"/diaperrecords")" class="btn btn-outline-primary ">Back to List</a>
         </div>
     }
@@ -42,6 +67,7 @@
 @code {
     private DiaperRecord? DiaperRecord;
     private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    private TextInfo TextInfo = new CultureInfo("en-US", false).TextInfo;
 
     [SupplyParameterFromQuery]
     private Guid Id { get; set; }
@@ -49,7 +75,7 @@
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        DiaperRecord = await context.DiaperRecords.FirstOrDefaultAsync(m => m.Id == Id);
+        DiaperRecord = await context.DiaperRecords.Include(x => x.Tags).ThenInclude(x => x.Tag).FirstOrDefaultAsync(m => m.Id == Id);
 
         if (DiaperRecord is null)
         {
