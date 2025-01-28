@@ -23,7 +23,7 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert"/> 
 
-            <TimeAdjustComponent UtcAndLocalDateTimeRecord="DiaperRecord" HideAdjusters=true HideElapsedTime=true HideEndTime=true/>
+            <TimeAdjustComponent UtcAndLocalDateTimeRecord="DiaperRecord" StartTimeLabel="Time" HideAdjusters=true HideElapsedTime=true HideEndTime=true/>
 
             <div class="mb-3">
                 <InputCheckbox @bind-Value="DiaperRecord.Pee" class="btn-check" id="btn-pee"></InputCheckbox>

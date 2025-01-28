@@ -4,7 +4,7 @@
 @rendermode @(new InteractiveServerRenderMode(false))
 
 <div hidden=@HideStartTime class="mb-3 px-3">
-    <label for="starttime" class="form-label">Start Time:</label>
+    <label for="starttime" class="form-label">@StartTimeLabel</label>
     <InputDate Type="InputDateType.DateTimeLocal" id="starttime" @bind-Value="UtcAndLocalDateTimeRecord.LocalDateTimes.StartTimeLocal" class="form-control" />
     <ValidationMessage For="() => UtcAndLocalDateTimeRecord.LocalDateTimes.StartTimeLocal" class="text-danger" />
 </div>
@@ -19,7 +19,7 @@
 </div>
 
 <div hidden=@HideEndTime class="mb-3 px-3">
-    <label for="endtime" class="form-label">End Time:</label>
+    <label for="endtime" class="form-label">@EndTimeLabel</label>
     <InputDate Type="InputDateType.DateTimeLocal" id="endtime" @bind-Value="UtcAndLocalDateTimeRecord.LocalDateTimes.EndTimeLocal" class="form-control" />
     <ValidationMessage For="() => UtcAndLocalDateTimeRecord.EndTimeUtc" class="text-danger" />
 </div>
@@ -45,6 +45,10 @@
     [Parameter] public bool HideAdjusters { get; set; } = false;
 
     [Parameter] public bool HideElapsedTime { get; set; } = false;
+
+    [Parameter] public string StartTimeLabel { get; set; } = "Start Time:";
+
+    [Parameter] public string EndTimeLabel { get; set; } = "End Time:";
 
     private string[] nudgeArray = {"-30", "-5", "-1", "+1", "+5", "+30"};
 
