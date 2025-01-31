@@ -9,7 +9,7 @@
 @inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 @inject IUserIdentityProcessor UserIdentityProcessor
-@inject IToastService toastService
+@inject IToastService ToastService
 
 @rendermode @(new InteractiveServerRenderMode(false))
 
@@ -122,7 +122,7 @@
         var tag = await Context.Tags.SingleOrDefaultAsync(x => x.Title == tagInputSanitized) ?? new Tag { Title = tagInputSanitized };
         if (DiaperRecord.Tags.Any(x => x.Tag.Title == tagInputSanitized))
         {
-            toastService.ShowError("Tag already added");
+            ToastService.ShowError("Tag already added");
             return;
         }
 

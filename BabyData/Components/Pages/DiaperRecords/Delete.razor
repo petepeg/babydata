@@ -1,6 +1,9 @@
 ﻿@page "/diaperrecords/delete"
+
 @using Microsoft.EntityFrameworkCore
 @using BabyData.Data
+@using System.Globalization
+
 @inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
@@ -12,7 +15,7 @@
 <div>
     <h2>Diaper Record</h2>
     <hr />
-    @if (diaperRecord is null)
+    @if (DiaperRecord is null)
     {
         <p><em>Loading...</em></p>
     }
@@ -53,37 +56,38 @@
                 <p class="ms-2 mb-0">@string.Join(", ", DiaperRecord.Tags.Select(x => TextInfo.ToTitleCase(x.Tag.Title)))</p>
             </dd>
         </dl>
-        <EditForm method="post" Model="diaperRecord" OnValidSubmit="DeleteFeedingRecord" FormName="delete" Enhance>
-            <button type="submit" class="btn btn-outline-danger" disabled="@(diaperRecord is null)">Delete</button> |
-            <a href="/feedingrecords" class="btn btn-outline-primary">Back to List</a>
+        <EditForm method="post" Model="DiaperRecord" OnValidSubmit="DeleteFeedingRecord" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-outline-danger" disabled="@(DiaperRecord is null)">Delete</button> |
+            <a href="/diaperrecords" class="btn btn-outline-primary">Back to List</a>
         </EditForm>
     }
 </div>
 
 @code {
-    private DiaperRecord? diaperRecord;
-    private TimeZoneInfo timeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    [SupplyParameterFromQuery] private Guid Id { get; set; }
+    
+    private DiaperRecord? DiaperRecord;
+    private TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    private TextInfo TextInfo = new CultureInfo("en-US", false).TextInfo;
 
-    [SupplyParameterFromQuery]
-    private Guid Id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        diaperRecord = await context.DiaperRecords.FirstOrDefaultAsync(m => m.Id == Id);
+        DiaperRecord = await context.DiaperRecords.FirstOrDefaultAsync(m => m.Id == Id);
 
-        if (diaperRecord is null)
+        if (DiaperRecord is null)
         {
             NavigationManager.NavigateTo("notfound");
         }
-        diaperRecord?.SetTimeLocalFromUtc(timeZoneInfo);
+        DiaperRecord?.SetTimeLocalFromUtc(TimeZoneInfo);
 
     }
 
     private async Task DeleteFeedingRecord()
     {
         using var context = DbFactory.CreateDbContext();
-        context.DiaperRecords.Remove(diaperRecord!);
+        context.DiaperRecords.Remove(DiaperRecord!);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/diaperrecords");
     }

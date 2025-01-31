@@ -1,8 +1,14 @@
 ﻿@page "/diaperrecords/edit"
+
 @using Microsoft.EntityFrameworkCore
 @using BabyData.Data
+@using BlazorColorPicker
+@using System.Globalization
+
 @inject IDbContextFactory<BabyData.Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject IToastService toastService
+
 @rendermode @(new InteractiveServerRenderMode(false))
 
 <PageTitle>Edit Diaper Record</PageTitle>
@@ -75,7 +81,7 @@ else
                 </div>
 
                 <button type="submit" class="btn btn-outline-primary">Save</button>
-                <a class="btn btn-outline-primary float-end" href="/feedingrecords">Back to List</a>
+                <a class="btn btn-outline-primary float-end" href="/diaperrecords">Back to List</a>
 
             </EditForm>
         </div>
@@ -136,8 +142,8 @@ else
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        DiaperRecord ??= await context.DiaperRecords.FirstOrDefaultAsync(m => m.Id == Id);
-        DiaperRecord?.SetTimeLocalFromUtc(timeZoneInfo);
+        DiaperRecord ??= await context.DiaperRecords.Include(x => x.Tags).ThenInclude(x => x.Tag).FirstOrDefaultAsync(m => m.Id == Id);
+        DiaperRecord?.SetTimeLocalFromUtc(TimeZoneInfo);
 
 
         if (DiaperRecord is null)
@@ -150,7 +156,7 @@ else
     // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task UpdateRecord()
     {
-        DiaperRecord?.SetTimeUtcFromLocal(timeZoneInfo);
+        DiaperRecord?.SetTimeUtcFromLocal(TimeZoneInfo);
 
         using var context = DbFactory.CreateDbContext();
         context.Tags.UpdateRange(DiaperRecord.Tags.Select(x => x.Tag));
