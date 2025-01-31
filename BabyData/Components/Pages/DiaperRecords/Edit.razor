@@ -97,11 +97,24 @@ else
     private TimeZoneInfo TimeZoneInfo => TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
     private ApplicationDbContext Context = default!;
     private TextInfo TextInfo = new CultureInfo("en-US", false).TextInfo;
-    private bool HidePoopColor => !DiaperRecord.Poop;
-    private string PeeText => DiaperRecord.Pee ? "Pee" : "Pee?";
-    private string PoopText => DiaperRecord.Poop ? "Poop" : "Poop?";
+    private bool HidePoopColor => !DiaperRecord!.Poop;
+    private string PeeText => DiaperRecord!.Pee ? "Pee" : "Pee?";
+    private string PoopText => DiaperRecord!.Poop ? "Poop" : "Poop?";
     bool IsOpened = false;
     string TagInput = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        DiaperRecord ??= await context.DiaperRecords.Include(x => x.Tags).ThenInclude(x => x.Tag).FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (DiaperRecord is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+
+        DiaperRecord!.SetTimeLocalFromUtc(TimeZoneInfo);
+    }
 
     void OpenModal()
     {
@@ -110,7 +123,7 @@ else
 
     void ClosedEvent(string value)
     {
-        DiaperRecord.ColorCode = value;
+        DiaperRecord!.ColorCode = value;
         IsOpened = false;
     }
 
@@ -124,7 +137,7 @@ else
 
         Context = await DbFactory.CreateDbContextAsync();
         var tag = await Context.Tags.SingleOrDefaultAsync(x => x.Title == tagInputSanitized) ?? new Tag { Title = tagInputSanitized };
-        if (DiaperRecord.Tags.Any(x => x.Tag.Title == tagInputSanitized))
+        if (DiaperRecord!.Tags.Any(x => x.Tag.Title == tagInputSanitized))
         {
             toastService.ShowError("Tag already added");
             return;
@@ -134,22 +147,13 @@ else
         DiaperRecord.Tags.Add(diaperTag);
     }
 
-    void RemoveTag(DiaperTag diaperTag)
-    {
-        DiaperRecord.Tags.Remove(diaperTag);
-    }
-
-    protected override async Task OnInitializedAsync()
+    async Task RemoveTag(DiaperTag diaperTag)
     {
         using var context = DbFactory.CreateDbContext();
-        DiaperRecord ??= await context.DiaperRecords.Include(x => x.Tags).ThenInclude(x => x.Tag).FirstOrDefaultAsync(m => m.Id == Id);
-        DiaperRecord?.SetTimeLocalFromUtc(TimeZoneInfo);
+        context.DiaperTags.Remove(diaperTag);
+        await context.SaveChangesAsync();
 
-
-        if (DiaperRecord is null)
-        {
-            NavigationManager.NavigateTo("notfound");
-        }
+        DiaperRecord!.Tags.Remove(diaperTag);
     }
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -159,7 +163,8 @@ else
         DiaperRecord?.SetTimeUtcFromLocal(TimeZoneInfo);
 
         using var context = DbFactory.CreateDbContext();
-        context.Tags.UpdateRange(DiaperRecord.Tags.Select(x => x.Tag));
+
+        context.Tags.UpdateRange(DiaperRecord!.Tags.Select(x => x.Tag));
         context.Attach(DiaperRecord!).State = EntityState.Modified;
 
         try
