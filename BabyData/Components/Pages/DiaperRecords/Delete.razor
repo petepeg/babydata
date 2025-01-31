@@ -17,21 +17,41 @@
         <p><em>Loading...</em></p>
     }
     else {
-        <dl class="row">
-            <dt class="col">Date</dt>
-            <dd class="col">@diaperRecord.LocalDateTimes.StartTimeLocal.ToShortDateString()</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col">StartTime</dt>
-            <dd class="col">@diaperRecord.LocalDateTimes.StartTimeString</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col">EndTime</dt>
-            <dd class="col">@diaperRecord.LocalDateTimes.EndTimeString</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col">Notes</dt>
-            <dd class="col">@diaperRecord.Notes</dd>
+        <dl>
+            <div class="row">
+                <dt class="col pe-1">Date:</dt>
+                <dd class="col px-0">@DiaperRecord.LocalDateTimes.StartTimeLocal.ToShortDateString()</dd>
+            </div>
+
+            <div class="row">
+                <dt class="col pe-1">Time:</dt>
+                <dd class="col px-0">@DiaperRecord.LocalDateTimes.StartTimeString</dd>
+            </div>
+
+            <div class="row">
+                <dt class="col pe-1">Poop:</dt>
+                <dd class="col px-0">@(DiaperRecord.Poop ? "Yes" : "No")</dd>
+            </div>
+            @if(DiaperRecord.Poop)
+            {
+                <div class="row">
+                    <dt class="col pe-1">Poop Color:</dt>
+                    <dd class="col px-0"><span style="background-color:@DiaperRecord.ColorCode">💩</span></dd>
+                </div>
+
+            }
+            <div class="row">
+                <dt class="col pe-1">Pee:</dt>
+                <dd class="col px-0">@(DiaperRecord.Pee ? "Yes" : "No")</dd>
+            </div>
+
+            <dt>Notes:</dt>
+            <dd>@DiaperRecord.Notes</dd>
+
+            <dt>Tags:</dt>
+            <dd>
+                <p class="ms-2 mb-0">@string.Join(", ", DiaperRecord.Tags.Select(x => TextInfo.ToTitleCase(x.Tag.Title)))</p>
+            </dd>
         </dl>
         <EditForm method="post" Model="diaperRecord" OnValidSubmit="DeleteFeedingRecord" FormName="delete" Enhance>
             <button type="submit" class="btn btn-outline-danger" disabled="@(diaperRecord is null)">Delete</button> |
