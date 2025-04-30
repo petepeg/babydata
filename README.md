@@ -4,7 +4,7 @@
 - [x] Multi Baby Support
 - [x] Add sleep records
 - [x] Diaper records
-- [ ] Account Sharing (do this next!)
+- [ ] Account Linking/Sharing (do this next!)
 - [ ] CSV import / export
 - [ ] Actually implement user timezones
 - [ ] Baby Profiles (right now it's just a name)
