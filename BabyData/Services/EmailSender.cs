@@ -1,8 +1,8 @@
 ﻿using BabyData.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using SendGrid.Helpers.Mail;
-using SendGrid;
+using Smtp2Go.Api;
+using Smtp2Go.Api.Models.Emails;
 
 namespace BabyData.Services;
 
@@ -30,31 +30,28 @@ public class EmailSender(IOptions<AuthMessageSenderOptions> optionsAccessor,
 
     public async Task SendEmailAsync(string toEmail, string subject, string message)
     {
-        if (string.IsNullOrEmpty(Options.SendGridKey))
+        if (string.IsNullOrEmpty(Options.Smtp2GoKey))
         {
             throw new Exception("Null EmailAuthKey");
         }
 
-        await Execute(Options.SendGridKey, subject, message, toEmail);
+        await Execute(Options.Smtp2GoKey, subject, message, toEmail);
     }
 
     public async Task Execute(string apiKey, string subject, string message, string toEmail)
     {
-        var client = new SendGridClient(apiKey);
-        var msg = new SendGridMessage()
+        var client = new Smtp2GoApiService(apiKey);
+        var msg = new EmailMessage()
         {
-            From = new EmailAddress("peter@pegues.party", "Account Services"),
+            
+            Sender = "peter@pegues.party",
             Subject = subject,
-            PlainTextContent = message,
-            HtmlContent = message
+            BodyText = message,
+            BodyHtml = message
         };
-        msg.AddTo(new EmailAddress(toEmail));
 
-        // Disable click tracking.
-        // See https://sendgrid.com/docs/User_Guide/Settings/tracking.html
-        msg.SetClickTracking(false, false);
-        var response = await client.SendEmailAsync(msg);
-        logger.LogInformation(response.IsSuccessStatusCode
+        var response = await client.SendEmail(msg);
+        logger.LogInformation(response.Data.Succeeded == 1
                                ? $"Email to {toEmail} queued successfully!"
                                : $"Failure Email to {toEmail}");
     }

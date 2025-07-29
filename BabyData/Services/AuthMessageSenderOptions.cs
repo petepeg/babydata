@@ -2,6 +2,6 @@
 {
     public class AuthMessageSenderOptions
     {
-        public string? SendGridKey { get; set; }
+        public string? Smtp2GoKey { get; set; }
     }
 }
