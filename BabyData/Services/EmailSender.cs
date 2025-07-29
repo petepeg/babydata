@@ -41,17 +41,15 @@ public class EmailSender(IOptions<AuthMessageSenderOptions> optionsAccessor,
     public async Task Execute(string apiKey, string subject, string message, string toEmail)
     {
         var client = new Smtp2GoApiService(apiKey);
-        var msg = new EmailMessage()
+        var msg = new EmailMessage("peter@pegues.party",toEmail)
         {
-            
-            Sender = "peter@pegues.party",
             Subject = subject,
             BodyText = message,
             BodyHtml = message
         };
 
         var response = await client.SendEmail(msg);
-        logger.LogInformation(response.Data.Succeeded == 1
+        logger.LogInformation(response.ResponseStatus == "OK"
                                ? $"Email to {toEmail} queued successfully!"
                                : $"Failure Email to {toEmail}");
     }
